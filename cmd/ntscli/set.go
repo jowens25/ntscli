@@ -3,7 +3,7 @@ package ntscli
 import (
 	"fmt"
 
-	"github.com/jowens25/ntscli/cmd/ntscli"
+	"github.com/jowens25/ntscli/pkg/ntscli"
 	"github.com/spf13/cobra"
 )
 
