@@ -1,7 +1,6 @@
 package ntscli
 
 import (
-	"fmt"
 	"log"
 )
 
@@ -19,74 +18,86 @@ type DeviceConfig struct {
 	BaseAddrLReg    int64
 	BaseAddrHReg    int64
 	IrqMaskReg      int64
+	Cores           []CoreConfig
 }
 
-var deviceConfig = DeviceConfig{
-	BlockSize:       16,
-	TypeInstanceReg: 0x00000000,
-	BaseAddrLReg:    0x00000004,
-	BaseAddrHReg:    0x00000008,
-	IrqMaskReg:      0x0000000C,
-}
+//var deviceConfig = DeviceConfig{
+//	BlockSize:       16,
+//	TypeInstanceReg: 0x00000000,
+//	BaseAddrLReg:    0x00000004,
+//	BaseAddrHReg:    0x00000008,
+//	IrqMaskReg:      0x0000000C,
+//	Cores:           make([]CoreConfig, 64),
+//}
 
-func readDeviceConfig(coreType int64, temp_core *CoreConfig) int {
+func readDeviceConfig(tempDeviceConfig *DeviceConfig) int {
 
-	var temp_data int64 = 0x00000000
+	tempDeviceConfig.BlockSize = 16
+	tempDeviceConfig.TypeInstanceReg = 0x00000000
+	tempDeviceConfig.BaseAddrLReg = 0x00000004
+	tempDeviceConfig.BaseAddrHReg = 0x00000008
+	tempDeviceConfig.IrqMaskReg = 0x0000000C
+
+	var tempData int64 = 0x00000000
+	var tempCore CoreConfig
 
 	for i := int64(0); i < 256; i++ {
-		//temp_core := Core{}
+		//tempCore := Core{}
 
-		type_addr := (0x00000000 + ((i * deviceConfig.BlockSize) + deviceConfig.TypeInstanceReg))
+		type_addr := (0x00000000 + ((i * tempDeviceConfig.BlockSize) + tempDeviceConfig.TypeInstanceReg))
 		//log.Println("i: ", i)
-		if readRegister(type_addr, &temp_data) == 0 {
-			//log.Println(temp_data)
-			if (i == 0) && ((((temp_data >> int64(16)) & 0x0000FFFF) != types.ConfSlaveCoreType) || (((temp_data >> int64(0)) & 0x0000FFFF) != 1)) {
+		if readRegister(type_addr, &tempData) == 0 {
+			//log.Println(tempData)
+			if (i == 0) && ((((tempData >> int64(16)) & 0x0000FFFF) != types.ConfSlaveCoreType) || (((tempData >> int64(0)) & 0x0000FFFF) != 1)) {
 
 				log.Println("ERROR: not a conf block at the address expected")
 				break
 
-			} else if temp_data == 0 {
+			} else if tempData == 0 {
 				break
 
 			} else {
-				temp_core.CoreType = ((temp_data >> 16) & 0x0000FFFF)
-				temp_core.InstanceNumber = ((temp_data >> 0) & 0x0000FFFF)
+				tempCore.CoreType = ((tempData >> 16) & 0x0000FFFF)
+				tempCore.InstanceNumber = ((tempData >> 0) & 0x0000FFFF)
 			}
 
 		} else {
 			log.Fatal("Error in reading modules config")
 		}
 
-		low_addr := (0x00000000 + ((i * deviceConfig.BlockSize) + deviceConfig.BaseAddrLReg))
-		if readRegister(low_addr, &temp_data) == 0 {
-			temp_core.BaseAddrLReg = temp_data
+		low_addr := (0x00000000 + ((i * tempDeviceConfig.BlockSize) + tempDeviceConfig.BaseAddrLReg))
+		if readRegister(low_addr, &tempData) == 0 {
+			tempCore.BaseAddrLReg = tempData
 		} else {
 			break
 		}
 
-		high_addr := (0x00000000 + ((i * deviceConfig.BlockSize) + deviceConfig.BaseAddrHReg))
-		if readRegister(high_addr, &temp_data) == 0 {
-			temp_core.BaseAddrHReg = temp_data
+		high_addr := (0x00000000 + ((i * tempDeviceConfig.BlockSize) + tempDeviceConfig.BaseAddrHReg))
+		if readRegister(high_addr, &tempData) == 0 {
+			tempCore.BaseAddrHReg = tempData
 		} else {
 			break
 		}
 
-		interrupt_mask := (0x00000000 + ((i * deviceConfig.BlockSize) + deviceConfig.IrqMaskReg))
-		if readRegister(interrupt_mask, &temp_data) == 0 {
-			temp_core.IrqMaskReg = temp_data
+		interrupt_mask := (0x00000000 + ((i * tempDeviceConfig.BlockSize) + tempDeviceConfig.IrqMaskReg))
+		if readRegister(interrupt_mask, &tempData) == 0 {
+			tempCore.IrqMaskReg = tempData
 		} else {
 			break
 		}
 
-		//fmt.Println(fmt.Sprintf("low 0x%08x", temp_core.BaseAddrLReg), fmt.Sprintf(" high 0x%08x", temp_core.BaseAddrHReg), " ", temp_core, " ", "Core type: ", get_name(temp_core.CoreType))
+		tempDeviceConfig.Cores = append(tempDeviceConfig.Cores, tempCore)
+		//fmt.Println(fmt.Sprintf("low 0x%08x", tempCore.BaseAddrLReg), fmt.Sprintf(" high 0x%08x", tempCore.BaseAddrHReg), " ", tempCore, " ", "Core type: ", get_name(tempCore.CoreType))
 
-		if coreType == temp_core.CoreType {
-			fmt.Println(fmt.Sprintf("low 0x%08x", temp_core.BaseAddrLReg), fmt.Sprintf(" high 0x%08x", temp_core.BaseAddrHReg), " ", temp_core, " ", "Core type: ", get_name(temp_core.CoreType))
-			break
-		}
-		////coreConfig.Cores = append(coreConfig.Cores, *temp_core) ?? not sure theres a good reason for this?
+		//if coreType == tempCore.CoreType {
+		//	fmt.Println(fmt.Sprintf("low 0x%08x", tempCore.BaseAddrLReg), fmt.Sprintf(" high 0x%08x", tempCore.BaseAddrHReg), " ", tempCore, " ", "Core type: ", get_name(tempCore.CoreType))
+		//	break
+		//} else if coreType == 0 {
+		//	fmt.Println(fmt.Sprintf("low 0x%08x", tempCore.BaseAddrLReg), fmt.Sprintf(" high 0x%08x", tempCore.BaseAddrHReg), " ", tempCore, " ", "Core type: ", get_name(tempCore.CoreType))
+		//}
+		////coreConfig.Cores = append(coreConfig.Cores, *tempCore) ?? not sure theres a good reason for this?
 
-		// /read_core_parameters(temp_core)
+		// /read_core_parameters(tempCore)
 	}
 
 	return 0

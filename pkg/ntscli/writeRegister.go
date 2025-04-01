@@ -81,7 +81,7 @@ func writeRegister(addr int64, data *int64) int {
 
 	// check response
 	if !strings.HasPrefix(read_string, "$WR") {
-		log.Fatal("No correct response received")
+		log.Fatal("w No correct response received")
 	}
 
 	// check checksum
