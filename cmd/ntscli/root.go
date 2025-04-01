@@ -8,10 +8,10 @@ import (
 )
 
 var rootCmd = &cobra.Command{
-	Use:   "ntscli",
-	Short: "Novus Time Server configuration tool",
-	Long:  "Novus Time Server configuration tool is used for updating the parameters in Novus Power Products Time Servers",
-
+	Use:     "ntscli",
+	Short:   "Novus Time Server configuration tool",
+	Long:    "Novus Time Server configuration tool is used for updating the parameters in Novus Power Products Time Servers",
+	Version: "0.0.1",
 	Run: func(cmd *cobra.Command, args []string) {
 
 	},
