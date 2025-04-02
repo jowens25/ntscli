@@ -7,19 +7,19 @@ import (
 
 func init() {
 
-	rootCmd.AddCommand(core)
-	core.AddCommand(coreConnect)
-	core.AddCommand(coreList)
+	rootCmd.AddCommand(device)
+	device.AddCommand(coreConnect)
+	device.AddCommand(coreList)
 
 }
 
-var core = &cobra.Command{
-	Use:     "core",
-	Aliases: []string{"core"},
-	Short:   "the core of the fpga",
+var device = &cobra.Command{
+	Use:     "device",
+	Aliases: []string{"d"},
+	Short:   "the fpga device",
 	Args:    cobra.ExactArgs(0),
 	Run: func(cmd *cobra.Command, args []string) {
-		ntscli.Core()
+		ntscli.Device()
 
 	},
 }
@@ -29,7 +29,7 @@ var coreConnect = &cobra.Command{
 	Short:   "Use this to connect with the core",
 	Args:    cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		ntscli.CoreConnect(args[0])
+		ntscli.DeviceConnect(args[0])
 
 	},
 }
@@ -39,7 +39,7 @@ var coreList = &cobra.Command{
 	Short:   "show core config",
 	Args:    cobra.ExactArgs(0),
 	Run: func(cmd *cobra.Command, args []string) {
-		ntscli.CoreList()
+		ntscli.DeviceList()
 
 	},
 }

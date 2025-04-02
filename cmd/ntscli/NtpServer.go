@@ -16,8 +16,8 @@ func init() {
 	ntpRead.Flags().BoolVar(&ntscli.IpAddr, "ip", false, "show ntp server ip")
 	ntpRead.Flags().BoolVar(&ntscli.MacAddr, "mac", false, "show ntp server mac")
 
-	ntpWrite.Flags().BoolVar(&ntscli.IpAddr, "ip", false, "set ntp server ip")
-	ntpWrite.Flags().BoolVar(&ntscli.MacAddr, "mac", false, "set ntp server mac")
+	ntpWrite.Flags().String("ip", "false", "set ntp server ip")
+	ntpWrite.Flags().String("mac", "false", "set ntp server mac")
 
 }
 
@@ -45,10 +45,12 @@ var ntpRead = &cobra.Command{
 var ntpWrite = &cobra.Command{
 	Use:     "write",
 	Aliases: []string{"w"},
-	Short:   "writes properties to the time",
-	Args:    cobra.ExactArgs(1),
+	Short:   "writes the properties of the ntp server",
+	Args:    cobra.ArbitraryArgs,
 	Run: func(cmd *cobra.Command, args []string) {
-		ntscli.NtpWrite(args[0])
+
+		ntscli.NtpWrite(cmd.Flags())
+
 	},
 }
 
@@ -59,6 +61,17 @@ var ntpList = &cobra.Command{
 	Args:    cobra.ExactArgs(0),
 	Run: func(cmd *cobra.Command, args []string) {
 		ntscli.NtpList()
+
+	},
+}
+
+var ntpEnable = &cobra.Command{
+	Use:     "enable",
+	Aliases: []string{"en"},
+	Short:   "enable ntp server",
+	Args:    cobra.ExactArgs(0),
+	Run: func(cmd *cobra.Command, args []string) {
+		ntscli.EnableNtp()
 
 	},
 }
