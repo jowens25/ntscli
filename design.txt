@@ -1,0 +1,6 @@
+
+
+this cli does two things
+
+strings -> fpga core config
+fgpa core config -> strings

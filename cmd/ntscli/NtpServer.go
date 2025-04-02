@@ -12,12 +12,16 @@ func init() {
 	ntp.AddCommand(ntpWrite)
 	ntp.AddCommand(ntpList)
 
-	ntpRead.Flags().BoolVar(&ntscli.All, "all", false, "show ntp server mac")
-	ntpRead.Flags().BoolVar(&ntscli.IpAddr, "ip", false, "show ntp server ip")
-	ntpRead.Flags().BoolVar(&ntscli.MacAddr, "mac", false, "show ntp server mac")
+	//ntp.AddCommand(ntpEnable)
 
-	ntpWrite.Flags().String("ip", "false", "set ntp server ip")
-	ntpWrite.Flags().String("mac", "false", "set ntp server mac")
+	ntp.Flags().BoolP("enable", "e", false, "enable ntp server")
+	ntp.Flags().BoolP("disable", "d", false, "disable ntp server")
+	ntpRead.Flags().Bool("all", false, "show ntp server mac")
+	ntpRead.Flags().Bool("ip", false, "show ntp server ip")
+	ntpRead.Flags().Bool("mac", false, "show ntp server mac")
+
+	ntpWrite.Flags().String("ip", "", "set ntp server ip")
+	ntpWrite.Flags().String("mac", "", "set ntp server mac")
 
 }
 
@@ -25,9 +29,9 @@ var ntp = &cobra.Command{
 	Use:     "ntp",
 	Aliases: []string{"ntp"},
 	Short:   "high performance ntp server",
-	Args:    cobra.ExactArgs(1),
+	Args:    cobra.ArbitraryArgs,
 	Run: func(cmd *cobra.Command, args []string) {
-		ntscli.Ntp(args[0])
+		ntscli.Ntp(cmd.Flags())
 
 	},
 }
@@ -36,9 +40,9 @@ var ntpRead = &cobra.Command{
 	Use:     "read",
 	Aliases: []string{"r"},
 	Short:   "reads properties to stdout",
-	Args:    cobra.ExactArgs(0),
+	Args:    cobra.ArbitraryArgs,
 	Run: func(cmd *cobra.Command, args []string) {
-		ntscli.NtpRead()
+		ntscli.NtpRead(cmd.Flags())
 	},
 }
 
@@ -48,9 +52,7 @@ var ntpWrite = &cobra.Command{
 	Short:   "writes the properties of the ntp server",
 	Args:    cobra.ArbitraryArgs,
 	Run: func(cmd *cobra.Command, args []string) {
-
 		ntscli.NtpWrite(cmd.Flags())
-
 	},
 }
 
@@ -61,17 +63,6 @@ var ntpList = &cobra.Command{
 	Args:    cobra.ExactArgs(0),
 	Run: func(cmd *cobra.Command, args []string) {
 		ntscli.NtpList()
-
-	},
-}
-
-var ntpEnable = &cobra.Command{
-	Use:     "enable",
-	Aliases: []string{"en"},
-	Short:   "enable ntp server",
-	Args:    cobra.ExactArgs(0),
-	Run: func(cmd *cobra.Command, args []string) {
-		ntscli.EnableNtp()
 
 	},
 }
