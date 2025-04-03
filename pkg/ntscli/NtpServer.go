@@ -99,8 +99,11 @@ func NtpRead(properties *pflag.FlagSet) {
 			readNtpServerMac()
 
 		case "all":
-			fmt.Println("NTP SERVER ENABLED:     ", readNtpServerEnable())
-			fmt.Println("NTP SERVER MAC ADDRESS: ", readNtpServerMac())
+			fmt.Println("NTP SERVER ENABLED:             ", readNtpServerEnable())
+			fmt.Println("NTP SERVER MAC ADDRESS:         ", readNtpServerMac())
+			fmt.Println("NTP SERVER VLAN ENABLED:        ", readNtpServerVlanEnable())
+			fmt.Println("NTP SERVER VLAN VALUE:          ", readNtpServerVlanValue())
+			readNtpServerMode()
 		}
 
 	})
@@ -130,30 +133,30 @@ func Ntp(properties *pflag.FlagSet) {
 }
 
 func NtpList() {
-	coreConfig := CoreConfig{}
-	readDeviceConfig()
-	if deviceHasNtpServer(&deviceConfig, &coreConfig) == 0 {
-	} else {
-		log.Println("whats going on?")
-	}
+	//coreConfig := CoreConfig{}
+	//readDeviceConfig()
+	////if deviceHasNtpServer(&deviceConfig, &coreConfig) == 0 {
+	////} else {
+	//	log.Println("whats going on?")
+	//}
 
 }
 
-func getNtpCore() *CoreConfig {
-
-	readDeviceConfig()
-
-	coreConfig := CoreConfig{}
-
-	if deviceHasNtpServer(&deviceConfig, &coreConfig) != 0 {
-		log.Fatal("Device has no NTP SERVER")
-	}
-
+func getNtpCore() *Core {
+	// //readDeviceConfigFile()
+	//
+	// readDeviceConfig()
+	// //
+	coreConfig := Core{}
+	//
+	//	if deviceHasNtpServer(&deviceConfig, &coreConfig) != 0 {
+	//		log.Fatal("Device has no NTP SERVER")
+	//	}
+	//
 	return &coreConfig
-
 }
 
-func deviceHasNtpServer(deviceConfig *DeviceConfig, coreConfig *CoreConfig) int64 {
+func deviceHasNtpServer(deviceConfig *Device, coreConfig *Core) int64 {
 	for _, core := range deviceConfig.Cores {
 		if core.CoreType == types.NtpServerCoreType {
 			*coreConfig = core
@@ -166,17 +169,11 @@ func deviceHasNtpServer(deviceConfig *DeviceConfig, coreConfig *CoreConfig) int6
 
 func EnableNtp() {
 	ntpCore := getNtpCore()
-	var tempData int64 = 0x00000000
-	tempData |= 0x00000001
+	var tempData int64 = 0x00000001
+	//tempData |= 0x00000001
 
 	if writeRegister(ntpCore.BaseAddrLReg+ntpServer.ControlReg, &tempData) == 0 {
-		if readRegister(ntpCore.BaseAddrLReg+ntpServer.ControlReg, &tempData) == 0 {
-			if (tempData & 0x00000001) == 1 {
-				fmt.Println("VERBOSE: NTP ENABLED")
-
-			}
-
-		}
+		fmt.Println("VERBOSE NTP SERVER: ", readNtpServerEnable())
 	} else {
 		log.Fatal(" VERBOSE ERROR WRITING NTP")
 	}
@@ -185,11 +182,9 @@ func EnableNtp() {
 
 func DisableNtp() {
 	ntpCore := getNtpCore()
-
 	var tempData int64 = 0x00000000
-
 	if writeRegister(ntpCore.BaseAddrLReg+ntpServer.ControlReg, &tempData) == 0 {
-		fmt.Println("VERBOSE: NTP DISABLED")
+		fmt.Println("VERBOSE NTP SERVER: ", readNtpServerEnable())
 	} else {
 		log.Fatal(" VERBOSE ERROR WRITING NTP")
 	}
@@ -243,79 +238,93 @@ func readNtpServerMac() string {
 	} else {
 		return "NA"
 	}
+}
 
+func readNtpServerVlanValue() string {
+	ntpCore := getNtpCore()
+	var tempData int64 = 0x00000000
+	if readRegister(ntpCore.BaseAddrLReg+ntpServer.ConfigVlanReg, &tempData) == 0 {
+		tempData &= 0x0000FFFF
+		return fmt.Sprintf("0x%08x", &tempData)
+	} else {
+		return "NA"
+	}
+}
+
+func readNtpServerVlanEnable() string {
+	ntpCore := getNtpCore()
+	var tempData int64 = 0x00000000
+	if readRegister(ntpCore.BaseAddrLReg+ntpServer.ConfigVlanReg, &tempData) == 0 {
+		if (tempData & 0x00010000) == 0 {
+			return "disabled"
+		} else {
+			return "enabled"
+		}
+	} else {
+		return "disabled"
+	}
+}
+
+func readNtpServerMode() {
+	ntpCore := getNtpCore()
+	var tempData int64 = 0x00000000
+
+	// mode & server config
+	if readRegister(ntpCore.BaseAddrLReg+ntpServer.ConfigModeReg, &tempData) == 0 {
+		result := ""
+		if ((tempData >> 0) & 0x00000003) == 1 {
+			result = "IPv4"
+		} else if ((tempData >> 0) & 0x00000003) == 2 {
+			result = "IPv6"
+		} else {
+			result = "NA"
+		}
+		fmt.Print("NTP SERVER IP MODE: ")
+		fmt.Println(result)
+
+		if (tempData & 0x00000010) == 0 {
+			result = "DISABLED"
+		} else {
+			result = "ENABLED"
+		}
+		fmt.Print("NTP SERVER UNICAST MODE: ")
+		fmt.Println(result)
+
+		if (tempData & 0x00000020) == 0 {
+			result = "DISABLED"
+		} else {
+			result = "ENABLED"
+		}
+		fmt.Print("NTP SERVER MUTLICASE MODE: ")
+		fmt.Println(result)
+
+		if (tempData & 0x00000040) == 0 {
+			result = "DISABLED"
+		} else {
+			result = "ENABLED"
+		}
+		fmt.Print("NTP SERVER BROADCAST MODE: ")
+		fmt.Println(result)
+		fmt.Println("NTP SERVER PRECISION VALUE: ", rune(int8(((tempData >> 8) & 0x000000FF))))
+		fmt.Println("NTP SERVER POLLINTERVAL VALUE: ", string(((tempData >> 16) & 0x000000FF)))
+		fmt.Println("NTP SERVER STRATUM VALUE: ", string((tempData>>24)&0x000000FF))
+
+	} else {
+		fmt.Println("NTP SERVER IP MODE: NA")
+
+		fmt.Println("NTP SERVER UNICASTMODE: DISABLED")
+
+		fmt.Println("NTP SERVER MULTICASTMODE: DISABLED")
+
+		fmt.Println("NTP SERVER BROADCASTMODE: DISABLED")
+		fmt.Println("NTP SERVER PRECISIONVALUE: NA")
+		fmt.Println("NTP SERVER POLLINTERVALVALUE: NA")
+		fmt.Println("NTP SERVER STRATUMVALUE: NA")
+
+	}
 }
 
 /*
-	func readNtpServerVlan() {
-		ntpCore := getNtpCore()
-		var tempData int64 = 0x00000000
-		if readRegister(ntpCore.BaseAddrLReg+ntpServer.ConfigVlanReg, &tempData) == 0 {
-			if (tempData & 0x00010000) == 0 {
-				ntpServer.VlanEnable = false
-			} else {
-				ntpServer.VlanEnable = true
-			}
-
-			tempData &= 0x0000FFFF
-			ntpServer.VlanValue = fmt.Sprintf("0x%08x", &tempData)
-
-		} else {
-			ntpServer.VlanEnable = false
-			ntpServer.VlanValue = "NA"
-
-		}
-	}
-
-	func readNtpServerMode() {
-		ntpCore := getNtpCore()
-		var tempData int64 = 0x00000000
-
-		// mode & server config
-		if readRegister(ntpCore.BaseAddrLReg+ntpServer.ConfigModeReg, &tempData) == 0 {
-			if ((tempData >> 0) & 0x00000003) == 1 {
-				ntpServer.IpMode = "IPv4"
-			} else if ((tempData >> 0) & 0x00000003) == 2 {
-				ntpServer.IpMode = "IPv6"
-			} else {
-				ntpServer.IpMode = "NA"
-			}
-
-			if (tempData & 0x00000010) == 0 {
-				ntpServer.UnicastMode = false
-			} else {
-				ntpServer.UnicastMode = true
-			}
-
-			if (tempData & 0x00000020) == 0 {
-				ntpServer.MulticastMode = false
-			} else {
-				ntpServer.MulticastMode = true
-			}
-
-			if (tempData & 0x00000040) == 0 {
-				ntpServer.BroadcastMode = false
-			} else {
-				ntpServer.BroadcastMode = true
-			}
-
-			ntpServer.PrecisionValue = rune(int8(((tempData >> 8) & 0x000000FF)))
-			ntpServer.PollIntervalValue = string(((tempData >> 16) & 0x000000FF))
-			ntpServer.StratumValue = string((tempData >> 24) & 0x000000FF)
-
-		} else {
-			ntpServer.IpMode = "NA"
-			ntpServer.UnicastMode = false
-			ntpServer.MulticastMode = false
-			ntpServer.BroadcastMode = false
-
-			ntpServer.PrecisionValue = 'N'
-			ntpServer.PollIntervalValue = "NA"
-			ntpServer.StratumValue = "NA"
-
-		}
-	}
-
 	func readNtpServerReferenceId() {
 		ntpCore := getNtpCore()
 		var tempData int64 = 0x00000000
