@@ -12,13 +12,13 @@ var BaudRates = []int{2000000, 1000000, 500000, 460800, 115200}
 var BaudRate = 1000000
 
 type Device struct {
-	Name            string `json:"Name"`
-	BlockSize       int64  `json:"BlockSize"`
-	TypeInstanceReg int64  `json:"TypeInstanceReg"`
-	BaseAddrLReg    int64  `json:"BaseAddrLReg"`
-	BaseAddrHReg    int64  `json:"BaseAddrHReg"`
-	IrqMaskReg      int64  `json:"IrqMaskReg"`
-	Cores           []Core `json:"Cores"`
+	Name            string          `json:"Name"`
+	BlockSize       int64           `json:"BlockSize"`
+	TypeInstanceReg int64           `json:"TypeInstanceReg"`
+	BaseAddrLReg    int64           `json:"BaseAddrLReg"`
+	BaseAddrHReg    int64           `json:"BaseAddrHReg"`
+	IrqMaskReg      int64           `json:"IrqMaskReg"`
+	Cores           map[string]Core `json:"Cores"`
 }
 
 type Core struct {
@@ -28,6 +28,10 @@ type Core struct {
 	BaseAddrLReg   int64  `json:"BaseAddrLReg"`
 	BaseAddrHReg   int64  `json:"BaseAddrHReg"`
 	IrqMaskReg     int64  `json:"IrqMaskReg"`
+}
+
+var device = Device{
+	Cores: make(map[string]Core),
 }
 
 //func Device() {
@@ -99,7 +103,7 @@ func DeviceConnect(input string) int {
 	}
 */
 func DevicePullConfig() {
-	readDeviceConfig()
+	ReadDeviceConfig()
 }
 func writeDeviceConfigFile(device Device) int {
 
@@ -141,8 +145,7 @@ func readDeviceConfigFile() int { // allow passing file name?
 
 }
 */
-func readDeviceConfig() int {
-	var device Device
+func ReadDeviceConfig() int {
 
 	device.Name = "Novus Time Server"
 
@@ -152,13 +155,14 @@ func readDeviceConfig() int {
 	device.BaseAddrHReg = 0x00000008
 	device.IrqMaskReg = 0x0000000C
 
-	var tempData int64 = 0x00000000
 	var tempCore Core
+
+	var tempData int64 = 0x00000000
 
 	for i := int64(0); i < 256; i++ {
 
-		type_addr := (0x00000000 + ((i * device.BlockSize) + device.TypeInstanceReg))
-		if readRegister(type_addr, &tempData) == 0 {
+		typeAddr := (0x00000000 + ((i * device.BlockSize) + device.TypeInstanceReg))
+		if readRegister(typeAddr, &tempData) == 0 {
 			if (i == 0) && ((((tempData >> int64(16)) & 0x0000FFFF) != types.ConfSlaveCoreType) || (((tempData >> int64(0)) & 0x0000FFFF) != 1)) {
 
 				log.Println("ERROR: not a conf block at the address expected")
@@ -170,7 +174,7 @@ func readDeviceConfig() int {
 			} else {
 
 				tempCore.CoreType = ((tempData >> 16) & 0x0000FFFF)
-				tempCore.Name = get_name(tempCore.CoreType)
+				tempCore.Name = getName(tempCore.CoreType)
 				tempCore.InstanceNumber = ((tempData >> 0) & 0x0000FFFF)
 			}
 
@@ -178,28 +182,30 @@ func readDeviceConfig() int {
 			log.Fatal("Error in reading modules config")
 		}
 
-		low_addr := (0x00000000 + ((i * device.BlockSize) + device.BaseAddrLReg))
-		if readRegister(low_addr, &tempData) == 0 {
+		lowAddr := (0x00000000 + ((i * device.BlockSize) + device.BaseAddrLReg))
+		if readRegister(lowAddr, &tempData) == 0 {
 			tempCore.BaseAddrLReg = tempData
 		} else {
 			break
 		}
 
-		high_addr := (0x00000000 + ((i * device.BlockSize) + device.BaseAddrHReg))
-		if readRegister(high_addr, &tempData) == 0 {
+		highAddr := (0x00000000 + ((i * device.BlockSize) + device.BaseAddrHReg))
+		if readRegister(highAddr, &tempData) == 0 {
 			tempCore.BaseAddrHReg = tempData
 		} else {
 			break
 		}
 
-		interrupt_mask := (0x00000000 + ((i * device.BlockSize) + device.IrqMaskReg))
-		if readRegister(interrupt_mask, &tempData) == 0 {
+		interruptMask := (0x00000000 + ((i * device.BlockSize) + device.IrqMaskReg))
+		if readRegister(interruptMask, &tempData) == 0 {
 			tempCore.IrqMaskReg = tempData
 		} else {
 			break
 		}
 
-		device.Cores = append(device.Cores, tempCore)
+		device.Cores[tempCore.Name] = tempCore
+
+		//device.Cores = append(device.Cores, tempCore)
 		//fmt.Println(fmt.Sprintf("low 0x%08x", tempCore.BaseAddrLReg), fmt.Sprintf(" high 0x%08x", tempCore.BaseAddrHReg), " ", tempCore, " ", "Core type: ", get_name(tempCore.CoreType))
 
 		//if coreType == tempCore.CoreType {
@@ -212,7 +218,7 @@ func readDeviceConfig() int {
 
 		// /read_core_parameters(tempCore)
 	}
-
-	writeDeviceConfigFile(device)
+	//fmt.Println(device)
+	//writeDeviceConfigFile(device)
 	return 0
 }

@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/jowens25/ntscli/pkg/ntscli"
+
 	"github.com/spf13/cobra"
 )
 
@@ -18,6 +20,8 @@ var rootCmd = &cobra.Command{
 }
 
 func Execute() {
+	ntscli.ReadDeviceConfig()
+
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Fprintf(os.Stderr, "Whoops. There was an error while executing your CLI '%s'", err)
 		os.Exit(1)

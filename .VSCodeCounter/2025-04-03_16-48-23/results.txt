@@ -1,0 +1,44 @@
+Date : 2025-04-03 16:48:23
+Directory : /home/jowens/Projects/ntscli
+Total : 13 files,  1271 codes, 0 comments, 320 blanks, all 1591 lines
+
+Languages
++------------------+------------+------------+------------+------------+------------+
+| language         | files      | code       | comment    | blank      | total      |
++------------------+------------+------------+------------+------------+------------+
+| Go               |         11 |      1,233 |          0 |        315 |      1,548 |
+| Go Checksum File |          1 |         25 |          0 |          1 |         26 |
+| Go Module File   |          1 |         13 |          0 |          4 |         17 |
++------------------+------------+------------+------------+------------+------------+
+
+Directories
++--------------------------------------------------------------+------------+------------+------------+------------+------------+
+| path                                                         | files      | code       | comment    | blank      | total      |
++--------------------------------------------------------------+------------+------------+------------+------------+------------+
+| .                                                            |         13 |      1,271 |          0 |        320 |      1,591 |
+| . (Files)                                                    |          3 |         43 |          0 |          8 |         51 |
+| cmd                                                          |          3 |        134 |          0 |         38 |        172 |
+| cmd/ntscli                                                   |          3 |        134 |          0 |         38 |        172 |
+| pkg                                                          |          7 |      1,094 |          0 |        274 |      1,368 |
+| pkg/ntscli                                                   |          7 |      1,094 |          0 |        274 |      1,368 |
++--------------------------------------------------------------+------------+------------+------------+------------+------------+
+
+Files
++--------------------------------------------------------------+------------------+------------+------------+------------+------------+
+| filename                                                     | language         | code       | comment    | blank      | total      |
++--------------------------------------------------------------+------------------+------------+------------+------------+------------+
+| /home/jowens/Projects/ntscli/cmd/ntscli/Device.go            | Go               |         56 |          0 |         14 |         70 |
+| /home/jowens/Projects/ntscli/cmd/ntscli/NtpServer.go         | Go               |         56 |          0 |         16 |         72 |
+| /home/jowens/Projects/ntscli/cmd/ntscli/root.go              | Go               |         22 |          0 |          8 |         30 |
+| /home/jowens/Projects/ntscli/go.mod                          | Go Module File   |         13 |          0 |          4 |         17 |
+| /home/jowens/Projects/ntscli/go.sum                          | Go Checksum File |         25 |          0 |          1 |         26 |
+| /home/jowens/Projects/ntscli/main.go                         | Go               |          5 |          0 |          3 |          8 |
+| /home/jowens/Projects/ntscli/pkg/ntscli/Device.go            | Go               |        175 |          0 |         50 |        225 |
+| /home/jowens/Projects/ntscli/pkg/ntscli/NtpServer.go         | Go               |        606 |          0 |        128 |        734 |
+| /home/jowens/Projects/ntscli/pkg/ntscli/calculateChecksum.go | Go               |         15 |          0 |          3 |         18 |
+| /home/jowens/Projects/ntscli/pkg/ntscli/ntscli.go            | Go               |          1 |          0 |          1 |          2 |
+| /home/jowens/Projects/ntscli/pkg/ntscli/readRegister.go      | Go               |         79 |          0 |         27 |        106 |
+| /home/jowens/Projects/ntscli/pkg/ntscli/types.go             | Go               |        147 |          0 |         42 |        189 |
+| /home/jowens/Projects/ntscli/pkg/ntscli/writeRegister.go     | Go               |         71 |          0 |         23 |         94 |
+| Total                                                        |                  |      1,271 |          0 |        320 |      1,591 |
++--------------------------------------------------------------+------------------+------------+------------+------------+------------+

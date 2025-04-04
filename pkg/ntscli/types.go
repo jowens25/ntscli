@@ -37,7 +37,7 @@ type Types struct {
 	ConfExtCoreType               int64
 }
 
-func get_name(core_type int64) string {
+func getName(core_type int64) string {
 
 	switch core_type {
 
