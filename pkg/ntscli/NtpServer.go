@@ -1,11 +1,13 @@
 package ntscli
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"strconv"
 	"strings"
 
+	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 )
 
@@ -59,72 +61,229 @@ var NtpCore Core
 
 var tempData int64
 
-func Ntp(properties *pflag.FlagSet) {
+func Ntp(cmd *cobra.Command) {
 	fmt.Println("MAIN NTP FUNCTION CALL")
 	if DeviceHasNtpServer(&device) != 0 {
 		log.Fatal("device does not have an ntp server")
 	}
+
 	NtpCore = device.Cores["NtpServerCoreType"]
 
-	properties.SortFlags = false
-	properties.Visit(func(f *pflag.Flag) {
+	switch cmd.Name() {
 
-		switch f.Name {
-		case "enable":
-			EnableNtp()
-		case "disable":
-			DisableNtp()
-		case "show":
-			fmt.Println(NtpCore)
-		}
+	case "ntp":
+		cmd.Flags().Visit(func(f *pflag.Flag) {
 
-	})
+			switch f.Name {
+			case "enable":
+				writeNtpServerStatus("enable")
+			case "disable":
+				writeNtpServerStatus("disable")
+			case "core":
+				jsonData, err := json.MarshalIndent(NtpCore, "", " ")
+				if err != nil {
+					fmt.Println("some json error")
+				}
+				fmt.Println("NTP SERVER CORE: ", string(jsonData))
+			case "status":
+				fmt.Println("NTP SERVER STATUS: ", readNtpServerEnable())
+			case "list":
+				NtpReadPrintAll()
+			default:
+				fmt.Println("That does not appear to be a valid flag. Try: ", cmd.UsageString())
+			}
+		})
+
+	case "ip":
+		cmd.Flags().Visit(func(f *pflag.Flag) {
+
+			switch f.Name {
+			case "mode":
+				flagArg, err := cmd.Flags().GetString(f.Name)
+				if err != nil {
+					log.Fatal("No such argument for property: ", f.Name, err)
+				}
+				fmt.Println("//writeNtpServerMode(flagArg)", flagArg)
+			case "addr":
+				flagArg, err := cmd.Flags().GetString(f.Name)
+				if err != nil {
+					log.Fatal("No such argument for property: ", f.Name, err)
+				}
+				fmt.Println("// writeNtpServerAddr(flagArg)", flagArg)
+			case "list":
+				fmt.Println("IP MODE: ", readNtpServerIpMode())
+				fmt.Println("IP ADDR: ", readNtpServerIpAddress())
+			default:
+				fmt.Println("That does not appear to be a valid flag. Try: ", cmd.UsageString())
+			}
+		})
+
+	case "mac":
+		cmd.Flags().Visit(func(f *pflag.Flag) {
+
+			switch f.Name {
+
+			case "addr":
+				addr, err := cmd.Flags().GetString(f.Name)
+				if err != nil {
+					log.Fatal("No such argument for property: ", f.Name, err)
+				}
+				//fmt.Println("// writeNtpServerAddr(addr)", addr)
+				writeNtpServerMac(addr)
+			case "list":
+				fmt.Println("MAC ADDRESS: ", readNtpServerMac())
+			default:
+				fmt.Println("That does not appear to be a valid flag. Try: ", cmd.UsageString())
+			}
+		})
+
+	case "vlan":
+		cmd.Flags().Visit(func(f *pflag.Flag) {
+
+			switch f.Name {
+
+			case "value":
+				value, err := cmd.Flags().GetString(f.Name)
+				if err != nil {
+					log.Fatal("No such argument for property: ", f.Name, err)
+				}
+				fmt.Println("// writeNtpServerAddr(value)", value)
+				writeNtpServerVlanValue(value)
+
+			case "enable":
+				writeNtpServerVlanEnable("enable")
+			case "disable":
+				writeNtpServerVlanEnable("disable")
+			case "list":
+				fmt.Println("NTP SERVER VLAN ENABLE: ", readNtpServerVlanEnable())
+				fmt.Println("NTP SERVER VLAN VALUE: ", readNtpServerVlanValue())
+			default:
+				fmt.Println("That does not appear to be a valid flag. Try: ", cmd.UsageString())
+			}
+		})
+
+		fmt.Println("NTP SERVER VLAN ENABLE: ", readNtpServerVlanEnable())
+		fmt.Println("NTP SERVER VLAN VALUE: ", readNtpServerVlanValue())
+
+	// status
+
+	//case "status":
+	//	status, err := cmd.Flags().GetString(f.Name)
+	//	fmt.Println(status)
+	//	if err != nil {
+	//		log.Fatal("No such argument for property: ", f.Name, err)
+	//	} else {
+	//		writeNtpServerStatus(status)
+	//	}
+	//
+	//	fmt.Println("NTP SERVER: ", readNtpServerEnable())
+	//
+	//case "list-all":
+	//	NtpReadPrintAll()
+	//
+	////// ip address
+	////case "ip":
+	////	ip, err := cmd.Flags().GetString(f.Name)
+	////	if err != nil {
+	////		log.Fatal("No such argument for property: ", f.Name, err)
+	////	} else {
+	////		writeNtpServerMac(ip)
+	////
+	////	}
+	//
+	//case "set-ip":
+	//	ip, err := cmd.Flags().GetString(f.Name)
+	//	if err != nil {
+	//		log.Fatal("No such argument for property: ", f.Name, err)
+	//	} else {
+	//		writeNtpServerMac(ip)
+	//
+	//	}
+	//
+	//case "list-mac":
+	//
+	//	fmt.Println("NTP SERVER MAC ADDRESS:               ", readNtpServerMac())
+	//
+	//	mac, err := cmd.Flags().GetString(f.Name)
+	//	if err != nil {
+	//		log.Fatal("No such argument for property: ", f.Name, err)
+	//	} else {
+	//		updateNtpServerMac(mac)
+	//
+	//	}
+	//
+	//case "set-mac":
+	//
+	//	mac, err := cmd.Flags().GetString(f.Name)
+	//	if err != nil {
+	//		log.Fatal("No such argument for property: ", f.Name, err)
+	//	} else {
+	//		updateNtpServerMac(mac)
+	//
+	//	}
+	//
+	//case "list-vlan":
+	//	fmt.Println("NTP SERVER VLAN ENABLED:              ", readNtpServerVlanEnable())
+	//	fmt.Println("NTP SERVER VLAN VALUE:                ", readNtpServerVlanValue())
+	//
+	//	//case "vlan":
+	//	//
+	//	//	value, err := properties.GetString(f.Name)
+	//	//	fmt.Println(value)
+	//	//	if err != nil {
+	//	//		log.Fatal("No such argument for property: ", f.Name, err)
+	//	//	} else {
+	//	//		writeNtpServerVlanEnable(value)
+	//	//
+	//	//	}
+	//
+	//case "enable-vlan":
+	//
+	//	//
+	//	//	value, err := properties.GetString(f.Name)
+	//	//	fmt.Println(value)
+	//	//	if err != nil {
+	//	//		log.Fatal("No such argument for property: ", f.Name, err)
+	//	} else {
+	//		writeNtpServerVlanEnable(value)
+	//
+	//	}
+
+	default:
+		fmt.Println("default case")
+		cmd.Flags().Visit(func(f *pflag.Flag) { fmt.Println(f.Name) })
+	}
 
 }
 
-func NtpWrite(properties *pflag.FlagSet) {
-	if DeviceHasNtpServer(&device) != 0 {
-		log.Fatal("device does not have an ntp server")
+func NtpReadPrintAll() {
+
+	fmt.Println("NTP SERVER:                           ", readNtpServerEnable())
+	fmt.Println("NTP SERVER INSTANCE:                  ", NtpCore.InstanceNumber)
+	fmt.Println("NTP SERVER IP ADDRESS:                ", readNtpServerIpAddress())
+	fmt.Println("NTP SERVER IP MODE:                   ", readNtpServerIpMode())
+	fmt.Println("NTP SERVER MAC ADDRESS:               ", readNtpServerMac())
+	fmt.Println("NTP SERVER VLAN ENABLED:              ", readNtpServerVlanEnable())
+	fmt.Println("NTP SERVER VLAN VALUE:                ", readNtpServerVlanValue())
+	fmt.Println("NTP SERVER UNICAST:                   ", readNtpServerUnicastMode())
+	fmt.Println("NTP SERVER MULTICAST:                 ", readNtpServerMulticastMode())
+	fmt.Println("NTP SERVER BROADCAST:                 ", readNtpServerBroadcastMode())
+	fmt.Println("NTP SERVER PRECISION:                 ", readNtpServerPrecisionValue())
+	fmt.Println("NTP SERVER POLL INTERVAL:             ", readNtpServerPollIntervalValue())
+	fmt.Println("NTP SERVER STRATUM:                   ", readNtpServerStratumValue())
+	fmt.Println("NTP SERVER REFERENCE ID:              ", readNtpServerReferenceId())
+	for k, v := range readNtpServerUTC() {
+		fmt.Println("NTP SERVER", k, ":", v)
 	}
-	NtpCore = device.Cores["NtpServerCoreType"]
-	properties.SortFlags = false
-	properties.Visit(func(f *pflag.Flag) {
 
-		switch f.Name {
-		case "ip":
-			ip, err := properties.GetString(f.Name)
-			if err != nil {
-				log.Fatal("No such argument for property: ", f.Name, err)
-			} else {
-				writeNtpServerMac(ip)
+	fmt.Println("NTP SERVER REQUEST COUNT:             ", readNtpServerRequestCount())
+	fmt.Println("NTP SERVER RESPONSE COUNT:            ", readNtpServerResponseCount())
+	fmt.Println("NTP SERVER REQUESTS DROPPED:          ", readNtpServerRequestsDropped())
+	fmt.Println("NTP SERVER BROADCAST COUNT:           ", readNtpServerBroadcastCount())
+	fmt.Println("NTP SERVER COUNT CONTROL:             ", readNtpServerCountControl())
+	fmt.Println("NTP SERVER VERSION:                   ", readNtpServerVersion())
 
-			}
-
-		case "mac":
-
-			mac, err := properties.GetString(f.Name)
-			if err != nil {
-				log.Fatal("No such argument for property: ", f.Name, err)
-			} else {
-				updateNtpServerMac(mac)
-
-			}
-
-		case "vlan":
-
-			value, err := properties.GetString(f.Name)
-			fmt.Println(value)
-			if err != nil {
-				log.Fatal("No such argument for property: ", f.Name, err)
-			} else {
-				writeNtpServerVlanEnable(value)
-
-			}
-
-		}
-
-	})
-
+	//readNtpServerMode()
 }
 
 func readNtpServerIpMode() string {
@@ -226,73 +385,6 @@ func readNtpServerIpAddress() string {
 	return ipAddr
 }
 
-func NtpRead(properties *pflag.FlagSet) {
-	if DeviceHasNtpServer(&device) != 0 {
-		log.Fatal("device does not have an ntp server")
-	}
-	NtpCore = device.Cores["NtpServerCoreType"]
-
-	properties.SortFlags = false
-	properties.Visit(func(f *pflag.Flag) {
-		//log.Println(f.Name)
-		//readNtpServerMode()
-		switch f.Name {
-		case "ip":
-			//readNtpServerIpAddress()
-
-		case "mac":
-			readNtpServerMac()
-
-		case "all":
-			NtpReadPrintAll()
-
-		//case "control":
-		//tempData = 0x00000000
-		//readRegister(NtpCore.BaseAddrLReg+ntpServer.ConfigControlReg, &tempData)
-		//fmt.Print(tempData)
-
-		case "vlan":
-			fmt.Println("NTP SERVER VLAN Enabled: ", readNtpServerVlanEnable())
-			fmt.Println("NTP SERVER VLAN VALUE: ", readNtpServerVlanValue())
-		}
-
-	})
-}
-
-func NtpReadPrintAll() {
-
-	fmt.Println("NTP SERVER:                           ", readNtpServerEnable())
-	fmt.Println("NTP SERVER INSTANCE:                  ", NtpCore.InstanceNumber)
-	fmt.Println("NTP SERVER IP ADDRESS:                ", readNtpServerIpAddress())
-	fmt.Println("NTP SERVER IP MODE:                   ", readNtpServerIpMode())
-	fmt.Println("NTP SERVER MAC ADDRESS:               ", readNtpServerMac())
-	fmt.Println("NTP SERVER VLAN ENABLED:              ", readNtpServerVlanEnable())
-	fmt.Println("NTP SERVER VLAN VALUE:                ", readNtpServerVlanValue())
-	fmt.Println("NTP SERVER UNICAST:                   ", readNtpServerUnicastMode())
-	fmt.Println("NTP SERVER MULTICAST:                 ", readNtpServerMulticastMode())
-	fmt.Println("NTP SERVER BROADCAST:                 ", readNtpServerBroadcastMode())
-	fmt.Println("NTP SERVER PRECISION:                 ", readNtpServerPrecisionValue())
-	fmt.Println("NTP SERVER POLL INTERVAL:             ", readNtpServerPollIntervalValue())
-	fmt.Println("NTP SERVER STRATUM:                   ", readNtpServerStratumValue())
-	fmt.Println("NTP SERVER REFERENCE ID:              ", readNtpServerReferenceId())
-	for k, v := range readNtpServerUTC() {
-		fmt.Println("NTP SERVER", k, ":", v)
-	}
-
-	fmt.Println("NTP SERVER REQUEST COUNT:             ", readNtpServerRequestCount())
-	fmt.Println("NTP SERVER RESPONSE COUNT:            ", readNtpServerResponseCount())
-	fmt.Println("NTP SERVER REQUESTS DROPPED:          ", readNtpServerRequestsDropped())
-	fmt.Println("NTP SERVER BROADCAST COUNT:           ", readNtpServerBroadcastCount())
-	fmt.Println("NTP SERVER COUNT CONTROL:             ", readNtpServerCountControl())
-	fmt.Println("NTP SERVER VERSION:                   ", readNtpServerVersion())
-
-	//readNtpServerMode()
-}
-
-func NtpList() {
-
-}
-
 func DeviceHasNtpServer(dev *Device) int64 {
 	for _, core := range dev.Cores {
 		if core.CoreType == types.NtpServerCoreType {
@@ -303,26 +395,22 @@ func DeviceHasNtpServer(dev *Device) int64 {
 	return -1
 }
 
-// enable block
-func EnableNtp() {
+func writeNtpServerStatus(status string) {
 
-	tempData = 0x00000001
-	//tempData |= 0x00000001
+	if status == "enable" {
+		tempData = 0x00000001
+	} else if status == "disable" {
+		tempData = 0x00000000
+	} else {
+		log.Fatal("Please enter a valid status (enabled or disabled)")
+	}
+
 	if writeRegister(NtpCore.BaseAddrLReg+ntpServer.ControlReg, &tempData) == 0 {
 		fmt.Println("VERBOSE NTP SERVER: ", readNtpServerEnable())
 	} else {
 		log.Fatal(" VERBOSE ERROR WRITING NTP")
 	}
-}
 
-func DisableNtp() {
-
-	tempData = 0x00000000
-	if writeRegister(NtpCore.BaseAddrLReg+ntpServer.ControlReg, &tempData) == 0 {
-		fmt.Println("VERBOSE NTP SERVER: ", readNtpServerEnable())
-	} else {
-		log.Fatal(" VERBOSE ERROR WRITING NTP")
-	}
 }
 
 func readNtpServerEnable() string {
@@ -495,42 +583,30 @@ func writeNtpServerVlanEnable(mode string) {
 }
 
 func writeNtpServerVlanValue(value string) {
-
-	// vlan
-	temp_string := value
-	mode := "enable"
-
-	//temp_data = temp_string.toUInt(nullptr, 16)
-	temp_data, _ := strconv.ParseInt(string(temp_string), 16, 64)
-
-	//temp_data &= 0x0000FFFF
-	if mode == "enable" {
-		temp_data |= 0x00010000 // enable
+	value, _ = strings.CutPrefix(value, "0x")
+	readRegister(NtpCore.BaseAddrLReg+ntpServer.ConfigVlanReg, &tempData)
+	v, err := strconv.ParseInt(value, 16, 64)
+	if err != nil {
+		log.Fatal("error")
 	}
+	//fmt.Println("v: ", v)
+	tempData &= 0xFFFF0000 // keep the current value in the upper part of the register
+	tempData |= v
 
-	if temp_string == "NA" {
-		//nothing
+	fmt.Println(tempData)
+	if writeRegister(NtpCore.BaseAddrLReg+ntpServer.ConfigVlanReg, &tempData) == 0 {
 
-	} else if writeRegister(NtpCore.BaseAddrLReg+ntpServer.ConfigVlanReg, &temp_data) == 0 {
-
-		temp_data &= 0x0000FFFF
-
-		// return the Vlan Value
-
-		temp_data = 0x00000002 // write
-
-		if writeRegister(NtpCore.BaseAddrLReg+ntpServer.ConfigControlReg, &temp_data) == 0 {
-			// nothing
+		tempData = 0x00000002
+		if writeRegister(NtpCore.BaseAddrLReg+ntpServer.ConfigControlReg, &tempData) == 0 {
+			// do nothing
 		} else {
 			fmt.Println("vlan enabled: false")
-			fmt.Println("vlan value: NA")
-		}
 
-		fmt.Println("VALUE VALUE VALUE: ", fmt.Sprintf("0x%08x", temp_data))
+		}
 
 	} else {
 		fmt.Println("vlan enabled: false")
-		fmt.Println("vlan value: NA")
+
 	}
 
 }
