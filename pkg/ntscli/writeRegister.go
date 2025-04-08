@@ -59,7 +59,7 @@ func writeRegister(addr int64, data *int64) int {
 	read_data = read_data[:n]
 	port.Close()
 	read_string := string(read_data)
-	log.Print("verbose read: ", string(read_data))
+	//log.Print("verbose read: ", string(read_data))
 	//fmt.Printf("read: % #x \n", read_data)
 
 	checksum = calculateChecksum(read_data)
