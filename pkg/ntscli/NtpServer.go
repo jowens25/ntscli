@@ -94,9 +94,16 @@ func Ntp(cmd *cobra.Command) {
 				}
 				fmt.Println("NTP SERVER CORE: ", string(jsonData))
 			case "status":
-				fmt.Println("NTP SERVER STATUS: ", readNtpServerEnable())
+				fmt.Println("NTP SERVER STATUS: ", readNtpServerStatus())
+
+			case "reference":
+				refId, err := cmd.Flags().GetString(f.Name)
+				if err != nil {
+					log.Fatal("No such argument for property: ", f.Name, err)
+				}
+				writeNtpServerReferenceId(refId)
 			case "list":
-				NtpReadPrintAll()
+				NtpPrintAll()
 			default:
 				fmt.Println("That does not appear to be a valid flag. Try: ", cmd.UsageString())
 			}
@@ -114,11 +121,11 @@ func Ntp(cmd *cobra.Command) {
 				writeNtpServerIpMode(mode)
 
 			case "addr":
-				flagArg, err := cmd.Flags().GetString(f.Name)
+				addr, err := cmd.Flags().GetString(f.Name)
 				if err != nil {
 					log.Fatal("No such argument for property: ", f.Name, err)
 				}
-				fmt.Println("// writeNtpServerAddr(flagArg)", flagArg)
+				writeNtpServerIpAddr(addr)
 
 			case "list":
 				fmt.Println("IP MODE: ", readNtpServerIpMode())
@@ -212,7 +219,7 @@ func Ntp(cmd *cobra.Command) {
 				if err != nil {
 					log.Fatal("No such argument for property: ", f.Name, err)
 				}
-				fmt.Println("// writeNtpServerAddr(value)", value)
+				//fmt.Println("// writeNtpServerAddr(value)", value)
 				writeNtpServerVlanValue(value)
 
 			case "enable":
@@ -220,15 +227,17 @@ func Ntp(cmd *cobra.Command) {
 			case "disable":
 				writeNtpServerVlanEnable("disable")
 			case "list":
-				fmt.Println("NTP SERVER VLAN ENABLE: ", readNtpServerVlanEnable())
-				fmt.Println("NTP SERVER VLAN VALUE: ", readNtpServerVlanValue())
+				showNtpServerVLANENABLED()
+				showNtpServerVLANVALUE()
+				//fmt.Println("NTP SERVER VLAN ENABLE: ", readNtpServerVlanEnable())
+				//fmt.Println("NTP SERVER VLAN VALUE: ", readNtpServerVlanValue())
 			default:
 				fmt.Println("That does not appear to be a valid flag. Try: ", cmd.UsageString())
 			}
 		})
 
-		fmt.Println("NTP SERVER VLAN ENABLE: ", readNtpServerVlanEnable())
-		fmt.Println("NTP SERVER VLAN VALUE: ", readNtpServerVlanValue())
+		//fmt.Println("NTP SERVER VLAN ENABLE: ", readNtpServerVlanEnable())
+		//fmt.Println("NTP SERVER VLAN VALUE: ", readNtpServerVlanValue())
 
 	default:
 		fmt.Println("default case")

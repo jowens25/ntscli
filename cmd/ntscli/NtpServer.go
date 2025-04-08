@@ -20,6 +20,8 @@ func init() {
 	ntp.Flags().BoolP("enable", "e", false, "set the status of the ntp server (enabled, disabled)")
 	ntp.Flags().BoolP("disable", "d", false, "set the status of the ntp server (enabled, disabled)")
 
+	ntp.Flags().StringP("reference", "r", "", "set the reference ID of the ntp server")
+
 	ip.Flags().BoolP("list", "l", false, "list ip info")
 
 	ip.Flags().StringP("mode", "m", "", "set ip mode (IPv4, IPv6)")
