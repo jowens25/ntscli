@@ -1,0 +1,9 @@
+"filename", "language", "Go", "comment", "blank", "total"
+"/home/jowens/Projects/ntscli/cmd/ntscli/NtpServer.go", "Go", 62, 0, 17, 79
+"/home/jowens/Projects/ntscli/pkg/ntscli/NtpServer.go", "Go", -324, 0, -71, -395
+"/home/jowens/Projects/ntscli/pkg/ntscli/NtpServerReadFunctions.go", "Go", 707, 0, 116, 823
+"/home/jowens/Projects/ntscli/pkg/ntscli/NtpServerWriteFunctions.go", "Go", 470, 0, 127, 597
+"/home/jowens/Projects/ntscli/pkg/ntscli/PtpOcReadFunctions.go", "Go", 1300, 0, 105, 1405
+"/home/jowens/Projects/ntscli/pkg/ntscli/handleReadWriteError.go", "Go", 15, 0, 5, 20
+"/home/jowens/Projects/ntscli/pkg/ntscli/writeRegister.go", "Go", 3, 0, 2, 5
+"Total", "-", 2233, 0, 301, 2534

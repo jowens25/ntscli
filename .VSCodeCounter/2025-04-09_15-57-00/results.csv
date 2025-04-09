@@ -1,0 +1,19 @@
+"filename", "language", "Go Module File", "Go", "Go Checksum File", "comment", "blank", "total"
+"/home/jowens/Projects/ntscli/cmd/ntscli/Device.go", "Go", 0, 56, 0, 0, 14, 70
+"/home/jowens/Projects/ntscli/cmd/ntscli/NtpServer.go", "Go", 0, 118, 0, 0, 33, 151
+"/home/jowens/Projects/ntscli/cmd/ntscli/root.go", "Go", 0, 22, 0, 0, 8, 30
+"/home/jowens/Projects/ntscli/go.mod", "Go Module File", 13, 0, 0, 0, 4, 17
+"/home/jowens/Projects/ntscli/go.sum", "Go Checksum File", 0, 0, 25, 0, 1, 26
+"/home/jowens/Projects/ntscli/main.go", "Go", 0, 5, 0, 0, 3, 8
+"/home/jowens/Projects/ntscli/pkg/ntscli/Device.go", "Go", 0, 175, 0, 0, 50, 225
+"/home/jowens/Projects/ntscli/pkg/ntscli/NtpServer.go", "Go", 0, 282, 0, 0, 57, 339
+"/home/jowens/Projects/ntscli/pkg/ntscli/NtpServerReadFunctions.go", "Go", 0, 707, 0, 0, 116, 823
+"/home/jowens/Projects/ntscli/pkg/ntscli/NtpServerWriteFunctions.go", "Go", 0, 470, 0, 0, 127, 597
+"/home/jowens/Projects/ntscli/pkg/ntscli/PtpOcReadFunctions.go", "Go", 0, 1300, 0, 0, 105, 1405
+"/home/jowens/Projects/ntscli/pkg/ntscli/calculateChecksum.go", "Go", 0, 15, 0, 0, 3, 18
+"/home/jowens/Projects/ntscli/pkg/ntscli/handleReadWriteError.go", "Go", 0, 15, 0, 0, 5, 20
+"/home/jowens/Projects/ntscli/pkg/ntscli/ntscli.go", "Go", 0, 1, 0, 0, 1, 2
+"/home/jowens/Projects/ntscli/pkg/ntscli/readRegister.go", "Go", 0, 79, 0, 0, 27, 106
+"/home/jowens/Projects/ntscli/pkg/ntscli/types.go", "Go", 0, 147, 0, 0, 42, 189
+"/home/jowens/Projects/ntscli/pkg/ntscli/writeRegister.go", "Go", 0, 74, 0, 0, 25, 99
+"Total", "-", 13, 3466, 25, 0, 621, 4125
