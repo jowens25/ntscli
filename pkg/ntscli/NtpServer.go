@@ -283,6 +283,48 @@ func Ntp(cmd *cobra.Command) {
 			}
 		})
 
+	case "clear":
+		writeNtpServerCountControl()
+
+	case "server":
+
+		cmd.Flags().Visit(func(f *pflag.Flag) {
+
+			switch f.Name {
+
+			case "stratum":
+				value, err := cmd.Flags().GetString(f.Name)
+				if err != nil {
+					log.Fatal("No such argument for property: ", f.Name, err)
+				}
+				writeNtpServerStratumValue(value)
+
+			case "poll-interval":
+				value, err := cmd.Flags().GetString(f.Name)
+				if err != nil {
+					log.Fatal("No such argument for property: ", f.Name, err)
+				}
+				writeNtpServerPollInternal(value)
+
+			case "precision":
+				value, err := cmd.Flags().GetString(f.Name)
+				if err != nil {
+					log.Fatal("No such argument for property: ", f.Name, err)
+				}
+				writeNtpServerPrecision(value)
+
+			case "reference":
+				value, err := cmd.Flags().GetString(f.Name)
+				if err != nil {
+					log.Fatal("No such argument for property: ", f.Name, err)
+				}
+				writeNtpServerReferenceId(value)
+
+			default:
+				fmt.Println("That does not appear to be a valid flag. Try: ", cmd.UsageString())
+			}
+		})
+
 	default:
 		fmt.Println("default case")
 		cmd.Flags().Visit(func(f *pflag.Flag) { fmt.Println(f.Name) })

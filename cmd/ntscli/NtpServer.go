@@ -14,6 +14,10 @@ func init() {
 	ntp.AddCommand(mode)
 	ntp.AddCommand(utc)
 
+	ntp.AddCommand(clear)
+
+	ntp.AddCommand(server)
+
 	// ntp reads
 	ntp.Flags().BoolP("core", "c", false, "show core address")
 	ntp.Flags().BoolP("status", "s", false, "show ntp server status")
@@ -48,6 +52,11 @@ func init() {
 	utc.Flags().String("leap59", "", "enable UTC leap 59")
 	utc.Flags().StringP("enable-offset", "e", "", "enable UTC offset")
 	utc.Flags().StringP("offset", "o", "", "set UTC offset value")
+
+	server.Flags().StringP("stratum", "s", "", "set the stratum of the ntp server")
+	server.Flags().StringP("poll-interval", "i", "", "set the poll interval of the ntp server")
+	server.Flags().StringP("precision", "p", "", "set the precision of the ntp server")
+	server.Flags().StringP("reference", "r", "", "set the reference of the ntp server")
 
 }
 
@@ -112,6 +121,30 @@ var utc = &cobra.Command{
 	Use:     "utc",
 	Aliases: []string{"utc"},
 	Short:   "Coordinated Universal Time",
+	Args:    cobra.ArbitraryArgs,
+	Run: func(cmd *cobra.Command, args []string) {
+		ntscli.Ntp(cmd)
+
+	},
+}
+
+var clear = &cobra.Command{
+
+	Use:     "clear",
+	Aliases: []string{"clear"},
+	Short:   "clear ntp server counts",
+	Args:    cobra.ArbitraryArgs,
+	Run: func(cmd *cobra.Command, args []string) {
+		ntscli.Ntp(cmd)
+
+	},
+}
+
+var server = &cobra.Command{
+
+	Use:     "server",
+	Aliases: []string{"server thingy"},
+	Short:   "update the server parameters",
 	Args:    cobra.ArbitraryArgs,
 	Run: func(cmd *cobra.Command, args []string) {
 		ntscli.Ntp(cmd)

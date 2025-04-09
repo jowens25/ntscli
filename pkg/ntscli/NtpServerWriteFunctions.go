@@ -159,115 +159,132 @@ func writeNtpServerVlanValue(value string) {
 	if err != nil {
 		log.Fatal("error")
 	}
-	//fmt.Println("v: ", v)
 	tempData &= 0xFFFF0000 // keep the current value in the upper part of the register
 	tempData |= v
 
-	//fmt.Println(tempData)
 	if writeRegister(NtpCore.BaseAddrLReg+ntpServer.ConfigVlanReg, &tempData) == 0 {
-
 		tempData = 0x00000002
 		if writeRegister(NtpCore.BaseAddrLReg+ntpServer.ConfigControlReg, &tempData) == 0 {
 			showNtpServerVLANVALUE()
 		} else {
 			fmt.Println("vlan enabled: false")
-
 		}
 
 	} else {
 		fmt.Println("vlan enabled: false")
-
 	}
 
 }
 
 // NtpServer UNICAST
 func writeNtpServerUnicastMode(en string) {
-	//fmt.Println("NTP UNICAST: ", readNtpServerUnicastMode())
 	tempData = 0x00000000
 	readRegister(NtpCore.BaseAddrLReg+ntpServer.ConfigModeReg, &tempData)
-	//fmt.Printf("current: 0x%08x\n", tempData) // base 16 string format
 	tempData &= ^0x00000010 // Clear bit 16 (using NOT + AND)
 	if en == "enabled" {
 		tempData |= 0x00000010 // set unicast on
-	} else if en == "disabled" {
-		tempData |= 0x00000000
-	} else {
-		tempData |= 0x00000000
 	}
-	//fmt.Printf("to write : 0x%08x\n", tempData) // base 16 string format
 
-	if writeRegister(NtpCore.BaseAddrLReg+ntpServer.ConfigModeReg, &tempData) == 0 {
-		tempData = 0x00000001
-		if writeRegister(NtpCore.BaseAddrLReg+ntpServer.ConfigControlReg, &tempData) == 0 {
-			// nothing
-		} else {
-			fmt.Println("NTP SERVER UNICAST: DISABLED")
-		}
-	} else {
-		fmt.Println("NTP SERVER UNICAST: DISABLED")
+	writeRegister(NtpCore.BaseAddrLReg+ntpServer.ConfigModeReg, &tempData)
+	tempData = 0x00000001
+	if writeRegister(NtpCore.BaseAddrLReg+ntpServer.ConfigControlReg, &tempData) == 0 {
+		showNtpServerUNICAST()
 	}
 }
 
 // NtpServer MULTICAST
 func writeNtpServerMulticastMode(en string) {
-	//fmt.Println("NTP UNICAST: ", readNtpServerUnicastMode())
 	tempData = 0x00000000
 	readRegister(NtpCore.BaseAddrLReg+ntpServer.ConfigModeReg, &tempData)
-	//fmt.Printf("current: 0x%08x\n", tempData) // base 16 string format
 	tempData &= ^0x00000020 // Clear bit 16 (using NOT + AND)
 	if en == "enabled" {
-		tempData |= 0x00000020 // set unicast on
-	} else if en == "disabled" {
-		tempData |= 0x00000000
-	} else {
-		tempData |= 0x00000000
+		tempData |= 0x00000020 // set multicast on
 	}
-	//fmt.Printf("to write : 0x%08x\n", tempData) // base 16 string format
 
-	if writeRegister(NtpCore.BaseAddrLReg+ntpServer.ConfigModeReg, &tempData) == 0 {
-		tempData = 0x00000001
-		if writeRegister(NtpCore.BaseAddrLReg+ntpServer.ConfigControlReg, &tempData) == 0 {
-			// nothing
-		} else {
-			fmt.Println("NTP SERVER UNICAST: DISABLED")
-		}
-	} else {
-		fmt.Println("NTP SERVER UNICAST: DISABLED")
+	writeRegister(NtpCore.BaseAddrLReg+ntpServer.ConfigModeReg, &tempData)
+	tempData = 0x00000001
+	if writeRegister(NtpCore.BaseAddrLReg+ntpServer.ConfigControlReg, &tempData) == 0 {
+		showNtpServerMULTICAST()
 	}
 }
 
 // NtpServer BROADCAST
 func writeNtpServerBroadcastMode(en string) {
-	//fmt.Println("NTP UNICAST: ", readNtpServerUnicastMode())
 	tempData = 0x00000000
 	readRegister(NtpCore.BaseAddrLReg+ntpServer.ConfigModeReg, &tempData)
-	//fmt.Printf("current: 0x%08x\n", tempData) // base 16 string format
-	tempData &= ^0x00000040 // Clear bit 16 (using NOT + AND)
+	tempData &= ^0x00000040 // set broadcast off
 	if en == "enabled" {
-		tempData |= 0x00000040 // set unicast on
-	} else if en == "disabled" {
-		tempData |= 0x00000000
-	} else {
-		tempData |= 0x00000000
+		tempData |= 0x00000040 // set broadcast on
 	}
-	//fmt.Printf("to write : 0x%08x\n", tempData) // base 16 string format
 
-	if writeRegister(NtpCore.BaseAddrLReg+ntpServer.ConfigModeReg, &tempData) == 0 {
-		tempData = 0x00000001
-		if writeRegister(NtpCore.BaseAddrLReg+ntpServer.ConfigControlReg, &tempData) == 0 {
-			// nothing
-		} else {
-			fmt.Println("NTP SERVER BROADCAST: DISABLED")
-		}
-	} else {
-		fmt.Println("NTP SERVER BROADCAST: DISABLED")
+	writeRegister(NtpCore.BaseAddrLReg+ntpServer.ConfigModeReg, &tempData)
+	tempData = 0x00000001
+	if writeRegister(NtpCore.BaseAddrLReg+ntpServer.ConfigControlReg, &tempData) == 0 {
+		showNtpServerBROADCAST()
 	}
+
 }
 
 // NtpServer PRECISION
-// NtpServer POLLINTERVAL
+func writeNtpServerPrecision(value string) {
+	tempData = 0x00000000
+	readRegister(NtpCore.BaseAddrLReg+ntpServer.ConfigModeReg, &tempData)
+
+	val, err := strconv.ParseInt(value, 10, 64)
+	if err != nil {
+		log.Fatal("invalid precision value")
+	}
+	tempData &= ^((0xFFFFFFFF & 0x000000FF) << 8)
+	tempData |= ((val & 0x000000FF) << 8)
+
+	writeRegister(NtpCore.BaseAddrLReg+ntpServer.ConfigModeReg, &tempData)
+	tempData = 0x00000001
+	if writeRegister(NtpCore.BaseAddrLReg+ntpServer.ConfigControlReg, &tempData) == 0 {
+		showNtpServerPRECISION()
+	}
+}
+
+// NtpServer POLL INTERVAL
+func writeNtpServerPollInternal(value string) {
+	tempData = 0x00000000
+	readRegister(NtpCore.BaseAddrLReg+ntpServer.ConfigModeReg, &tempData)
+
+	val, err := strconv.ParseInt(value, 10, 64)
+	if err != nil {
+		log.Fatal("invalid poll interval value")
+	}
+	tempData &= ^((0xFFFFFFFF & 0x000000FF) << 16)
+
+	tempData |= ((val & 0x000000FF) << 16)
+
+	writeRegister(NtpCore.BaseAddrLReg+ntpServer.ConfigModeReg, &tempData)
+	tempData = 0x00000001
+	if writeRegister(NtpCore.BaseAddrLReg+ntpServer.ConfigControlReg, &tempData) == 0 {
+		showNtpServerPOLLINTERVAL()
+	}
+}
+
 // NtpServer STRATUM
+func writeNtpServerStratumValue(value string) {
+	tempData = 0x00000000
+	readRegister(NtpCore.BaseAddrLReg+ntpServer.ConfigModeReg, &tempData)
+
+	val, err := strconv.ParseInt(value, 10, 64)
+	if err != nil {
+		log.Fatal("invalid stratum value")
+	}
+	tempData &= ^((0xFFFFFFFF & 0x000000FF) << 24)
+
+	tempData |= ((val & 0x000000FF) << 24)
+
+	writeRegister(NtpCore.BaseAddrLReg+ntpServer.ConfigModeReg, &tempData)
+	tempData = 0x00000001
+	if writeRegister(NtpCore.BaseAddrLReg+ntpServer.ConfigControlReg, &tempData) == 0 {
+		showNtpServerSTRATUM()
+	}
+
+}
+
 // NtpServer REFERENCE ID
 func writeNtpServerReferenceId(id string) {
 	references := []string{"NTP", "NULL", "LOCL", "CESM", "RBDM", "PPS", "IRIG", "ACTS", "USNO", "PTB", "TDF", "DCF", "MSF", "WWV", "WWVB", "WWVH", "CHU", "LORC", "OMEG", "GPS"}
@@ -435,11 +452,20 @@ func writeNtpServerUTCOffsetValue(value string) {
 
 }
 
-//NtpServerREQUESTCOUNT
-//NtpServerRESPONSECOUNT
-//NtpServerREQUESTSDROPPED
-//NtpServerBROADCASTCOUNT
-//NtpServerCOUNTCONTROL
+// NtpServerREQUESTCOUNT READ ONLY :TODO
+// NtpServerRESPONSECOUNT READ ONLY : TODO
+// NtpServerREQUESTSDROPPED READ ONLY : TODO
+// NtpServerBROADCASTCOUNT READ ONLY : TODO
+// NtpServer COUNT CONTROL
+func writeNtpServerCountControl() {
+	tempData = 0x00000000
+	tempData |= 0x00000001 // enable
+
+	writeRegister(NtpCore.BaseAddrLReg+ntpServer.CountControlReg, &tempData)
+
+	showNtpServerBROADCASTCOUNT()
+}
+
 //NtpServerVERSION
 
 // NTP SERVER IP ADDRESS HELPER FUNCTIONS

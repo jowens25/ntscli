@@ -285,13 +285,8 @@ func readNtpServerBroadcastMode() string {
 func readNtpServerPrecisionValue() rune {
 	tempData = 0x00000000
 	var PrecisionValue rune
-	// mode & server config
 	if readRegister(NtpCore.BaseAddrLReg+ntpServer.ConfigModeReg, &tempData) == 0 {
-		if (tempData & 0x00000040) == 0 {
-			PrecisionValue = 'N'
-		} else {
-			PrecisionValue = rune(int8(((tempData >> 8) & 0x000000FF)))
-		}
+		PrecisionValue = rune(int8(((tempData >> 8) & 0x000000FF)))
 
 	} else {
 		PrecisionValue = 'N'
@@ -299,20 +294,12 @@ func readNtpServerPrecisionValue() rune {
 	return PrecisionValue
 }
 
-// read NtpServer POLLINTERVAL
+// read NtpServer POLL INTERVAL
 func readNtpServerPollIntervalValue() string {
 	tempData = 0x00000000
-	var PollIntervalValue string
-	// mode & server config
+	PollIntervalValue := ""
 	if readRegister(NtpCore.BaseAddrLReg+ntpServer.ConfigModeReg, &tempData) == 0 {
-		// /fmt.Println(tempData)
-		if (tempData & 0x00000040) == 0 {
-			PollIntervalValue = "NA"
-		} else {
-			PollIntervalValue = strconv.FormatInt(((tempData >> 16) & 0x000000FF), 10) // Base 10
-
-		}
-
+		PollIntervalValue = strconv.FormatInt(((tempData >> 16) & 0x000000FF), 10) // Base 10
 	} else {
 		PollIntervalValue = "NA"
 	}
@@ -325,12 +312,7 @@ func readNtpServerStratumValue() string {
 	StratumValue := ""
 	// mode & server config
 	if readRegister(NtpCore.BaseAddrLReg+ntpServer.ConfigModeReg, &tempData) == 0 {
-		if (tempData & 0x00000040) == 0 {
-			StratumValue = "NA"
-		} else {
-			StratumValue = strconv.FormatInt(((tempData >> 24) & 0x000000FF), 10) // Base 10
-		}
-
+		StratumValue = strconv.FormatInt(((tempData >> 24) & 0x000000FF), 10) // Base 10
 	} else {
 		StratumValue = "NA"
 	}
@@ -341,9 +323,8 @@ func readNtpServerStratumValue() string {
 func readNtpServerReferenceId() string {
 	tempData = 0x00000000
 	referenceId := ""
-	// reference id // no ref on UI??
+	// reference id
 	if readRegister(NtpCore.BaseAddrLReg+ntpServer.ConfigReferenceIdReg, &tempData) == 0 {
-		fmt.Println("DEBUG: ref id hex: ", tempData)
 		var temp_string []byte
 		temp_string = append(temp_string, byte(((tempData >> 24) & 0x000000FF)))
 		temp_string = append(temp_string, byte(((tempData >> 16) & 0x000000FF)))
