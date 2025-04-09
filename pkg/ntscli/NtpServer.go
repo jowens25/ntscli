@@ -236,8 +236,52 @@ func Ntp(cmd *cobra.Command) {
 			}
 		})
 
-		//fmt.Println("NTP SERVER VLAN ENABLE: ", readNtpServerVlanEnable())
-		//fmt.Println("NTP SERVER VLAN VALUE: ", readNtpServerVlanValue())
+	case "utc":
+
+		cmd.Flags().Visit(func(f *pflag.Flag) {
+
+			switch f.Name {
+
+			case "smearing":
+				value, err := cmd.Flags().GetString(f.Name)
+				if err != nil {
+					log.Fatal("No such argument for property: ", f.Name, err)
+				}
+				writeNtpServerUTCSmearing(value)
+
+			case "leap61":
+				value, err := cmd.Flags().GetString(f.Name)
+				if err != nil {
+					log.Fatal("No such argument for property: ", f.Name, err)
+				}
+				writeNtpServerUTCLeap61(value)
+
+			case "leap59":
+				value, err := cmd.Flags().GetString(f.Name)
+				if err != nil {
+					log.Fatal("No such argument for property: ", f.Name, err)
+				}
+				writeNtpServerUTCLeap59(value)
+
+			case "enable-offset":
+				value, err := cmd.Flags().GetString(f.Name)
+				if err != nil {
+					log.Fatal("No such argument for property: ", f.Name, err)
+				}
+				writeNtpServerUTCOffsetEnable(value)
+
+			case "offset":
+				fmt.Println("offset flag")
+				value, err := cmd.Flags().GetString(f.Name)
+				if err != nil {
+					log.Fatal("No such argument for property: ", f.Name, err)
+				}
+				writeNtpServerUTCOffsetValue(value)
+
+			default:
+				fmt.Println("That does not appear to be a valid flag. Try: ", cmd.UsageString())
+			}
+		})
 
 	default:
 		fmt.Println("default case")

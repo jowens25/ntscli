@@ -3,8 +3,8 @@ package ntscli
 import (
 	"fmt"
 	"log"
+	"net"
 	"strconv"
-	"strings"
 )
 
 // read NtpServer STATUS
@@ -35,22 +35,36 @@ func readNtpServerIpAddress() string {
 
 	// ip
 	if readNtpServerIpMode() == "IPv4" {
+		tempAddr := make([]byte, 4)
+		temp_ip4 := make([]int64, 4)
 		if readRegister(NtpCore.BaseAddrLReg+ntpServer.ConfigIpReg, &tempData) == 0 {
-			var temp_ip int64 = 0x00000000
-			temp_ip |= (tempData >> 0) & 0x000000FF
-			temp_ip = temp_ip << 8
-			temp_ip |= (tempData >> 8) & 0x000000FF
-			temp_ip = temp_ip << 8
-			temp_ip |= (tempData >> 16) & 0x000000FF
-			temp_ip = temp_ip << 8
-			temp_ip |= (tempData >> 24) & 0x000000FF
+			temp_ip4[0] = (tempData >> 0) & 0x000000FF
+			temp_ip4[1] = (tempData >> 8) & 0x000000FF
+			temp_ip4[2] = (tempData >> 16) & 0x000000FF
+			temp_ip4[3] = (tempData >> 24) & 0x000000FF
 
-			ipAddr = int_to_ip_addr(temp_ip)
+			//ipAddr = int_to_ip_addr(temp_ip)
+			//fmt.Println(temp_ip4)
+			for i, intPart := range temp_ip4 {
+				tempAddr[i] = byte(intPart)
+			}
+
+			ip := net.IP(tempAddr)
+
+			if ip.To16() != nil {
+				ipAddr = ip.String()
+
+			} else {
+				ipAddr = "::ffff:" + ip.String()
+
+			}
 
 		} else {
 			ipAddr = "NA"
 		}
 	} else if readNtpServerIpMode() == "IPv6" {
+		//fmt.Println("IPV6 read")
+		tempAddr := make([]byte, 16)
 		temp_ip6 := make([]int64, 16)
 		if readRegister(NtpCore.BaseAddrLReg+ntpServer.ConfigIpReg, &tempData) == 0 {
 			temp_ip6[0] = (tempData >> 0) & 0x000000FF
@@ -77,9 +91,21 @@ func readNtpServerIpAddress() string {
 						temp_ip6[14] = (tempData >> 16) & 0x000000FF
 						temp_ip6[15] = (tempData >> 24) & 0x000000FF
 
-						log.Println("IPv6 Addr: ", temp_ip6)
+						//log.Println("IPv6 Addr: ", temp_ip6)
 
-						ipAddr = int_to_ipv6(temp_ip6)
+						for i, intPart := range temp_ip6 {
+							tempAddr[i] = byte(intPart)
+						}
+
+						ip := net.IP(tempAddr)
+
+						if ip.To4() != nil {
+							ipAddr = "::ffff:" + ip.String()
+						} else {
+							ipAddr = ip.String()
+						}
+
+						//log.Println(ipAddr)
 						//temp_string = QHostAddress(temp_ip6).toString() ????
 
 						//ntpServer.IpAddr = string(temp_ip6)
@@ -779,58 +805,37 @@ func NtpPrintAll() {
 }
 
 // read Ntp Server IP helper functions
-func int_to_ip_addr(val int64) string {
-	fmt.Println("in to ip addr: ", val)
-	hex_string := fmt.Sprintf("%02x", val) // base 16 string format
-	fmt.Println("in to ip addr hex string: ", hex_string)
+//func int_to_ip_addr(val int64) string {
+//	fmt.Println("in to ip addr: ", val)
+//	hex_string := fmt.Sprintf("%02x", val) // base 16 string format
+//	fmt.Println("in to ip addr hex string: ", hex_string)
+//
+//	return hex_to_decimal(split_into_ip_addr(hex_string))
+//}
 
-	return hex_to_decimal(split_into_ip_addr(hex_string))
-}
+// func hex_to_decimal(hex_parts []string) string {
+//
+// 	ip := ""
+// 	decimalValue, _ := strconv.ParseInt(hex_parts[0], 16, 16)
+// 	ip += fmt.Sprint(decimalValue)
+//
+// 	for _, part := range hex_parts[1:] {
+//
+// 		decimalValue, err := strconv.ParseInt(part, 16, 16)
+// 		if err != nil {
+// 			log.Fatal("IP addr error")
+// 		}
+// 		ip += "." + fmt.Sprint(decimalValue)
+//
+// 	}
+// 	return ip
+// }
 
-func ip_addr_to_int(addr string) int64 {
-	var result int64
-	parts := strings.Split(addr, ".")
-
-	if len(parts) != 4 {
-		log.Fatal("invalid IP address format")
-	}
-
-	for i, part := range parts {
-		octet, err := strconv.ParseInt(part, 10, 64)
-		if err != nil || octet < 0 || octet > 255 {
-			log.Fatal("invalid octet value: ", part)
-		}
-
-		// Shift each octet into its proper position
-		result |= octet << (8 * (3 - i))
-	}
-	fmt.Println(result)
-	return result
-}
-
-func hex_to_decimal(hex_parts []string) string {
-
-	ip := ""
-	decimalValue, _ := strconv.ParseInt(hex_parts[0], 16, 16)
-	ip += fmt.Sprint(decimalValue)
-
-	for _, part := range hex_parts[1:] {
-
-		decimalValue, err := strconv.ParseInt(part, 16, 16)
-		if err != nil {
-			log.Fatal("IP addr error")
-		}
-		ip += "." + fmt.Sprint(decimalValue)
-
-	}
-	return ip
-}
-
-func split_into_ip_addr(hex_string string) []string {
-	var parts = []string{hex_string[0:2], hex_string[2:4], hex_string[4:6], hex_string[6:8]}
-	return parts
-}
-
-func int_to_ipv6(addr []int64) string {
-	return "::ffff:0" + fmt.Sprintf("%d", addr[0]) + "." + fmt.Sprintf("%d", addr[1]) + "." + fmt.Sprintf("%d", addr[2]) + "." + fmt.Sprintf("%d", addr[3])
-}
+//func split_into_ip_addr(hex_string string) []string {
+//	var parts = []string{hex_string[0:2], hex_string[2:4], hex_string[4:6], hex_string[6:8]}
+//	return parts
+//}
+//
+//func int_to_ipv6(addr []int64) string {
+//	return "::ffff:" + fmt.Sprintf("%d", addr[0]) + "." + fmt.Sprintf("%d", addr[1]) + "." + fmt.Sprintf("%d", addr[2]) + "." + fmt.Sprintf("%d", addr[3])
+//}

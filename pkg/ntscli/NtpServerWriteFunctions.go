@@ -3,6 +3,7 @@ package ntscli
 import (
 	"fmt"
 	"log"
+	"net"
 	"slices"
 	"strconv"
 	"strings"
@@ -31,263 +32,46 @@ func writeNtpServerStatus(status string) {
 // NtpServer IP ADDRESS
 
 func writeNtpServerIpAddr(addr string) {
-
 	ipMode := readNtpServerIpMode()
 	if ipMode == "IPv4" {
-		tempData = ip_addr_to_int(addr)
-		if writeRegister(NtpCore.BaseAddrLReg+ntpServer.ConfigIpReg, &tempData) == 0 {
-			tempData = 0x00000008 // write
-			if writeRegister(NtpCore.BaseAddrLReg+ntpServer.ConfigControlReg, &tempData) == 0 {
-				showNtpServerIPADDRESS()
-			} else {
-				fmt.Println("NTP SERVER IP ADDR FAILED")
-			}
-		} else {
-			fmt.Println("NTP SERVER IP ADDR FAILED")
-
-		}
+		ip4_addr_to_register_value(addr)
 	} else if ipMode == "IPv6" {
-
-		//{
-		//	temp_string = ui->NtpServerIpValue->text();
-		//	temp_ip6 = QHostAddress(temp_string).toIPv6Address();
-		//
-		//	temp_data = 0x00000000;
-		//	temp_data |= temp_ip6[3] & 0x000000FF;
-		//	temp_data = temp_data << 8;
-		//	temp_data |= temp_ip6[2] & 0x000000FF;
-		//	temp_data = temp_data << 8;
-		//	temp_data |= temp_ip6[1] & 0x000000FF;
-		//	temp_data = temp_data << 8;
-		//	temp_data |= temp_ip6[0] & 0x000000FF;
-		//
-		//	if (temp_string == "NA")
-		//	{
-		//		// nothing
-		//	}
-		//	else if (0 == ucm->com_lib.write_reg(temp_addr + Ucm_NtpServer_ConfigIpReg, temp_data))
-		//	{
-		//		temp_data = 0x00000000;
-		//		temp_data |= temp_ip6[7] & 0x000000FF;
-		//		temp_data = temp_data << 8;
-		//		temp_data |= temp_ip6[6] & 0x000000FF;
-		//		temp_data = temp_data << 8;
-		//		temp_data |= temp_ip6[5] & 0x000000FF;
-		//		temp_data = temp_data << 8;
-		//		temp_data |= temp_ip6[4] & 0x000000FF;
-		//
-		//		if (temp_string == "NA")
-		//		{
-		//			// nothing
-		//		}
-		//		else if (0 == ucm->com_lib.write_reg(temp_addr + Ucm_NtpServer_ConfigIpv61Reg, temp_data))
-		//		{
-		//			temp_data = 0x00000000;
-		//			temp_data |= temp_ip6[11] & 0x000000FF;
-		//			temp_data = temp_data << 8;
-		//			temp_data |= temp_ip6[10] & 0x000000FF;
-		//			temp_data = temp_data << 8;
-		//			temp_data |= temp_ip6[9] & 0x000000FF;
-		//			temp_data = temp_data << 8;
-		//			temp_data |= temp_ip6[8] & 0x000000FF;
-		//
-		//			if (temp_string == "NA")
-		//			{
-		//				// nothing
-		//			}
-		//			else if (0 == ucm->com_lib.write_reg(temp_addr + Ucm_NtpServer_ConfigIpv62Reg, temp_data))
-		//			{
-		//				temp_data = 0x00000000;
-		//				temp_data |= temp_ip6[15] & 0x000000FF;
-		//				temp_data = temp_data << 8;
-		//				temp_data |= temp_ip6[14] & 0x000000FF;
-		//				temp_data = temp_data << 8;
-		//				temp_data |= temp_ip6[13] & 0x000000FF;
-		//				temp_data = temp_data << 8;
-		//				temp_data |= temp_ip6[12] & 0x000000FF;
-		//
-		//				if (temp_string == "NA")
-		//				{
-		//					// nothing
-		//				}
-		//				else if (0 == ucm->com_lib.write_reg(temp_addr + Ucm_NtpServer_ConfigIpv63Reg, temp_data))
-		//				{
-		//					temp_data = 0x00000008; // write
-		//					if (0 == ucm->com_lib.write_reg(temp_addr + Ucm_NtpServer_ConfigControlReg, temp_data))
-		//					{
-		//						ui->NtpServerIpValue->setText(temp_string);
-		//					}
-		//					else
-		//					{
-		//						ui->NtpServerIpValue->setText("NA");
-		//					}
-		//				}
-		//				else
-		//				{
-		//					ui->NtpServerIpValue->setText("NA");
-		//				}
-		//			}
-		//			else
-		//			{
-		//				ui->NtpServerIpValue->setText("NA");
-		//			}
-		//		}
-		//		else
-		//		{
-		//			ui->NtpServerIpValue->setText("NA");
-		//		}
-		//	}
-		//	else
-		//	{
-		//		ui->NtpServerIpValue->setText("NA");
-		//	}
-		//}
-		//else
-		//{
-		//	ui->NtpServerIpValue->setText("NA");
-		//}
-
+		ip6_addr_to_register_value(addr)
 	}
-	//	           {
-	//	               ui->NtpServerIpValue->setText("NA");
-	//	           }
-	//	       }
-	//	       else
-	//	       {
-	//	           ui->NtpServerIpValue->setText("NA");
-	//	       }
-	//	   }
-	//	   else if (temp_string == "IPv6")
-	//	   {
-	//	       temp_string = ui->NtpServerIpValue->text();
-	//	       temp_ip6 = QHostAddress(temp_string).toIPv6Address();
-	//
-	//	       temp_data = 0x00000000;
-	//	       temp_data |= temp_ip6[3] & 0x000000FF;
-	//	       temp_data = temp_data << 8;
-	//	       temp_data |= temp_ip6[2] & 0x000000FF;
-	//	       temp_data = temp_data << 8;
-	//	       temp_data |= temp_ip6[1] & 0x000000FF;
-	//	       temp_data = temp_data << 8;
-	//	       temp_data |= temp_ip6[0] & 0x000000FF;
-	//
-	//	       if (temp_string == "NA")
-	//	       {
-	//	           // nothing
-	//	       }
-	//	       else if (0 == ucm->com_lib.write_reg(temp_addr + Ucm_NtpServer_ConfigIpReg, temp_data))
-	//	       {
-	//	           temp_data = 0x00000000;
-	//	           temp_data |= temp_ip6[7] & 0x000000FF;
-	//	           temp_data = temp_data << 8;
-	//	           temp_data |= temp_ip6[6] & 0x000000FF;
-	//	           temp_data = temp_data << 8;
-	//	           temp_data |= temp_ip6[5] & 0x000000FF;
-	//	           temp_data = temp_data << 8;
-	//	           temp_data |= temp_ip6[4] & 0x000000FF;
-	//
-	//	           if (temp_string == "NA")
-	//	           {
-	//	               // nothing
-	//	           }
-	//	           else if (0 == ucm->com_lib.write_reg(temp_addr + Ucm_NtpServer_ConfigIpv61Reg, temp_data))
-	//	           {
-	//	               temp_data = 0x00000000;
-	//	               temp_data |= temp_ip6[11] & 0x000000FF;
-	//	               temp_data = temp_data << 8;
-	//	               temp_data |= temp_ip6[10] & 0x000000FF;
-	//	               temp_data = temp_data << 8;
-	//	               temp_data |= temp_ip6[9] & 0x000000FF;
-	//	               temp_data = temp_data << 8;
-	//	               temp_data |= temp_ip6[8] & 0x000000FF;
-	//
-	//	               if (temp_string == "NA")
-	//	               {
-	//	                   // nothing
-	//	               }
-	//	               else if (0 == ucm->com_lib.write_reg(temp_addr + Ucm_NtpServer_ConfigIpv62Reg, temp_data))
-	//	               {
-	//	                   temp_data = 0x00000000;
-	//	                   temp_data |= temp_ip6[15] & 0x000000FF;
-	//	                   temp_data = temp_data << 8;
-	//	                   temp_data |= temp_ip6[14] & 0x000000FF;
-	//	                   temp_data = temp_data << 8;
-	//	                   temp_data |= temp_ip6[13] & 0x000000FF;
-	//	                   temp_data = temp_data << 8;
-	//	                   temp_data |= temp_ip6[12] & 0x000000FF;
-	//
-	//	                   if (temp_string == "NA")
-	//	                   {
-	//	                       // nothing
-	//	                   }
-	//	                   else if (0 == ucm->com_lib.write_reg(temp_addr + Ucm_NtpServer_ConfigIpv63Reg, temp_data))
-	//	                   {
-	//	                       temp_data = 0x00000008; // write
-	//	                       if (0 == ucm->com_lib.write_reg(temp_addr + Ucm_NtpServer_ConfigControlReg, temp_data))
-	//	                       {
-	//	                           ui->NtpServerIpValue->setText(temp_string);
-	//	                       }
-	//	                       else
-	//	                       {
-	//	                           ui->NtpServerIpValue->setText("NA");
-	//	                       }
-	//	                   }
-	//	                   else
-	//	                   {
-	//	                       ui->NtpServerIpValue->setText("NA");
-	//	                   }
-	//	               }
-	//	               else
-	//	               {
-	//	                   ui->NtpServerIpValue->setText("NA");
-	//	               }
-	//	           }
-	//	           else
-	//	           {
-	//	               ui->NtpServerIpValue->setText("NA");
-	//	           }
-	//	       }
-	//	       else
-	//	       {
-	//	           ui->NtpServerIpValue->setText("NA");
-	//	       }
-	//	   }
-	//	   else
-	//	   {
-	//	       ui->NtpServerIpValue->setText("NA");
-	//	   }
 }
 
 // NtpServer IP MODE
 func writeNtpServerIpMode(mode string) {
+	currentAddr := readNtpServerIpAddress()
 	tempData = 0x00000000
-	readRegister(NtpCore.BaseAddrLReg+ntpServer.ConfigControlReg, &tempData)
+	readRegister(NtpCore.BaseAddrLReg+ntpServer.ConfigModeReg, &tempData)
 
 	if mode == "ipv4" {
-		tempData &= ^0x00000001 // Clear bit 16 (using NOT + AND)
+		tempData &= ^0x0000002 // Clear bit 16 (using NOT + AND)
 		tempData |= 0x00000001
 
 	} else if mode == "ipv6" {
-		tempData &= ^0x01000002 // Clear bit 16 (using NOT + AND)
+		tempData &= ^0x00000001 // Clear bit 16 (using NOT + AND)
 		tempData |= 0x01000002
 
 	} else {
-		tempData |= 0x00000000
+		log.Fatal("ip mode error")
 
 	}
 
 	if writeRegister(NtpCore.BaseAddrLReg+ntpServer.ConfigModeReg, &tempData) == 0 {
 		tempData = 0x00000001
 		if writeRegister(NtpCore.BaseAddrLReg+ntpServer.ConfigControlReg, &tempData) == 0 {
-			// nothing
+			writeNtpServerIpAddr(currentAddr)
+			showNtpServerIPMODE()
+			//showNtpServerIPADDRESS()
 		} else {
 			fmt.Println("NTP SERVER IP MODE: UPDATE FAILED")
 		}
 	} else {
-		fmt.Println("NTP SERVER UNICAST: UPDATE FAILED")
+		fmt.Println("NTP SERVER IP MODE: UPDATE FAILED")
 	}
-	showNtpServerIPMODE()
-	showNtpServerIPADDRESS()
+
 }
 
 // NtpServer MAC ADDRESS
@@ -379,7 +163,7 @@ func writeNtpServerVlanValue(value string) {
 	tempData &= 0xFFFF0000 // keep the current value in the upper part of the register
 	tempData |= v
 
-	fmt.Println(tempData)
+	//fmt.Println(tempData)
 	if writeRegister(NtpCore.BaseAddrLReg+ntpServer.ConfigVlanReg, &tempData) == 0 {
 
 		tempData = 0x00000002
@@ -536,16 +320,251 @@ func writeNtpServerReferenceId(id string) {
 
 }
 
-//NtpServerUTCSMEARING
-//NtpServerUTCLEAP61INPROGRESS
-//NtpServerUTCLEAP59INPROGRESS
-//NtpServerUTCLEAP61
-//NtpServerUTCLEAP59
-//NtpServerUTCOFFSETENABLE
-//NtpServerUTCOFFSETVALUE
+// NtpServer UTC SMEARING
+func writeNtpServerUTCSmearing(en string) {
+	tempData = 0x00000000
+	readRegister(NtpCore.BaseAddrLReg+ntpServer.UtcInfoReg, &tempData)
+
+	tempData &= ^0x00000100 // Clear bit (using NOT + AND)
+
+	if en == "enabled" {
+		tempData |= 0x00000100
+
+	} else if en == "disabled" {
+		tempData |= 0x00000000
+	}
+
+	writeRegister(NtpCore.BaseAddrLReg+ntpServer.UtcInfoReg, &tempData)
+	tempData = 0x00000003 // write utc info and leap
+	writeRegister(NtpCore.BaseAddrLReg+ntpServer.UtcInfoControlReg, &tempData)
+
+	showNtpServerUTCSMEARING()
+
+}
+
+//NtpServerUTCLEAP61INPROGRESS READ ONLY :TODO
+//NtpServerUTCLEAP59INPROGRESS READ ONLY :TODO
+
+// NtpServer UTC LEAP 61
+func writeNtpServerUTCLeap61(en string) {
+	tempData = 0x00000000
+	readRegister(NtpCore.BaseAddrLReg+ntpServer.UtcInfoReg, &tempData)
+
+	tempData &= ^0x00000800 // Clear bit (using NOT + AND)
+
+	if en == "enabled" {
+		tempData |= 0x00000800
+
+	} else if en == "disabled" {
+		tempData |= 0x00000000
+	}
+
+	writeRegister(NtpCore.BaseAddrLReg+ntpServer.UtcInfoReg, &tempData)
+	tempData = 0x00000003 // write utc info and leap
+	writeRegister(NtpCore.BaseAddrLReg+ntpServer.UtcInfoControlReg, &tempData)
+
+	showNtpServerUTCLEAP61()
+}
+
+// NtpServer UTC LEAP 59
+func writeNtpServerUTCLeap59(en string) {
+	tempData = 0x00000000
+	readRegister(NtpCore.BaseAddrLReg+ntpServer.UtcInfoReg, &tempData)
+
+	tempData &= ^0x00001000 // Clear bit (using NOT + AND)
+
+	if en == "enabled" {
+		tempData |= 0x00001000
+
+	} else if en == "disabled" {
+		tempData |= 0x00000000
+	}
+
+	writeRegister(NtpCore.BaseAddrLReg+ntpServer.UtcInfoReg, &tempData)
+	tempData = 0x00000003 // write utc info and leap
+	writeRegister(NtpCore.BaseAddrLReg+ntpServer.UtcInfoControlReg, &tempData)
+
+	showNtpServerUTCLEAP59()
+}
+
+// NtpServer UTC OFFSET ENABLE
+func writeNtpServerUTCOffsetEnable(en string) {
+	tempData = 0x00000000
+	readRegister(NtpCore.BaseAddrLReg+ntpServer.UtcInfoReg, &tempData)
+
+	tempData &= ^0x00002000 // Clear bit (using NOT + AND)
+
+	if en == "enabled" {
+		tempData |= 0x00002000
+
+	} else if en == "disabled" {
+		tempData |= 0x00000000
+	}
+
+	writeRegister(NtpCore.BaseAddrLReg+ntpServer.UtcInfoReg, &tempData)
+	tempData = 0x00000003 // write utc info and leap
+	writeRegister(NtpCore.BaseAddrLReg+ntpServer.UtcInfoControlReg, &tempData)
+
+	showNtpServerUTCOFFSETENABLE()
+}
+
+// NtpServer UTC OFFSET VALUE
+
+func writeNtpServerUTCOffsetValue(value string) {
+
+	tempData = 0x00000000
+	readRegister(NtpCore.BaseAddrLReg+ntpServer.UtcInfoReg, &tempData)
+	tempData &= 0x0000FFFF // keep the current value in the lower part of the register
+
+	val, err := strconv.ParseInt(value, 10, 64)
+
+	if err != nil {
+		log.Fatal("UTC OFFSET VALUE ERROR")
+	} else {
+
+		//temp_data |= ((temp_string.toUInt(nullptr, 10) & 0x0000FFFF) << 16);
+
+		tempData |= ((val & 0x0000FFFF) << 16)
+
+		writeRegister(NtpCore.BaseAddrLReg+ntpServer.UtcInfoReg, &tempData)
+		tempData = 0x00000003 // write utc info and leap
+		writeRegister(NtpCore.BaseAddrLReg+ntpServer.UtcInfoControlReg, &tempData)
+
+		showNtpServerUTCOFFSETVALUE()
+	}
+
+}
+
 //NtpServerREQUESTCOUNT
 //NtpServerRESPONSECOUNT
 //NtpServerREQUESTSDROPPED
 //NtpServerBROADCASTCOUNT
 //NtpServerCOUNTCONTROL
 //NtpServerVERSION
+
+// NTP SERVER IP ADDRESS HELPER FUNCTIONS
+
+func ip4_addr_to_register_value(addr string) int64 {
+	tempAddr := make([]int64, 16)
+	byteAddr := net.ParseIP(addr)
+	byteAddr = byteAddr.To4()
+	if byteAddr != nil {
+
+		//fmt.Println("ipv4 ip addr? : ", byteAddr)
+
+		for i, b := range byteAddr {
+			//fmt.Println(b)
+			tempAddr[i] = int64(b)
+		}
+
+		tempData = 0x00000000
+		tempData |= tempAddr[3] & 0x000000FF
+		tempData = tempData << 8
+		tempData |= tempAddr[2] & 0x000000FF
+		tempData = tempData << 8
+		tempData |= tempAddr[1] & 0x000000FF
+		tempData = tempData << 8
+		tempData |= tempAddr[0] & 0x000000FF
+
+		//fmt.Println("ipv4 ip? : ", tempData)
+
+		if writeRegister(NtpCore.BaseAddrLReg+ntpServer.ConfigIpReg, &tempData) == 0 {
+			tempData = 0x00000008 // write
+			if writeRegister(NtpCore.BaseAddrLReg+ntpServer.ConfigControlReg, &tempData) == 0 {
+				showNtpServerIPADDRESS()
+			} else {
+				fmt.Println("IP UPDATE FAILED")
+			}
+		} else {
+			fmt.Println("IP UPDATE FAILED")
+		}
+
+	} else {
+
+		fmt.Println("Unabled to convert IPv6 Address to IPv4 - IP set to 0.0.0.0")
+		ip4_addr_to_register_value("0.0.0.0")
+
+		///	log.Fatal("In IPv4 Mode. Please enter an IPv4 address or which modes.")
+	}
+
+	return 0
+
+}
+
+func ip6_addr_to_register_value(addr string) int64 {
+
+	tempAddr := make([]int64, 16)
+	byteAddr := net.ParseIP(addr)
+	byteAddr = byteAddr.To16()
+
+	if byteAddr != nil {
+
+		for i, b := range byteAddr {
+			tempAddr[i] = int64(b)
+		}
+
+		tempData = 0x00000000
+		tempData |= tempAddr[3] & 0x000000FF
+		tempData = tempData << 8
+		tempData |= tempAddr[2] & 0x000000FF
+		tempData = tempData << 8
+		tempData |= tempAddr[1] & 0x000000FF
+		tempData = tempData << 8
+		tempData |= tempAddr[0] & 0x000000FF
+
+		if writeRegister(NtpCore.BaseAddrLReg+ntpServer.ConfigIpReg, &tempData) == 0 {
+			tempData = 0x00000000
+			tempData |= tempAddr[7] & 0x000000FF
+			tempData = tempData << 8
+			tempData |= tempAddr[6] & 0x000000FF
+			tempData = tempData << 8
+			tempData |= tempAddr[5] & 0x000000FF
+			tempData = tempData << 8
+			tempData |= tempAddr[4] & 0x000000FF
+
+			if writeRegister(NtpCore.BaseAddrLReg+ntpServer.ConfigIpv61Reg, &tempData) == 0 {
+				tempData = 0x00000000
+				tempData |= tempAddr[11] & 0x000000FF
+				tempData = tempData << 8
+				tempData |= tempAddr[10] & 0x000000FF
+				tempData = tempData << 8
+				tempData |= tempAddr[9] & 0x000000FF
+				tempData = tempData << 8
+				tempData |= tempAddr[8] & 0x000000FF
+
+				if writeRegister(NtpCore.BaseAddrLReg+ntpServer.ConfigIpv62Reg, &tempData) == 0 {
+					tempData = 0x00000000
+					tempData |= tempAddr[15] & 0x000000FF
+					tempData = tempData << 8
+					tempData |= tempAddr[14] & 0x000000FF
+					tempData = tempData << 8
+					tempData |= tempAddr[13] & 0x000000FF
+					tempData = tempData << 8
+					tempData |= tempAddr[12] & 0x000000FF
+
+					if writeRegister(NtpCore.BaseAddrLReg+ntpServer.ConfigIpv63Reg, &tempData) == 0 {
+						tempData = 0x00000008 // write
+						if writeRegister(NtpCore.BaseAddrLReg+ntpServer.ConfigControlReg, &tempData) == 0 {
+
+							showNtpServerIPADDRESS()
+
+						} else {
+							fmt.Println("IP UPDATE FAILED")
+						}
+					} else {
+						fmt.Println("IP UPDATE FAILED")
+					}
+				} else {
+					fmt.Println("IP UPDATE FAILED")
+				}
+			} else {
+				fmt.Println("IP UPDATE FAILED")
+			}
+		} else {
+			fmt.Println("IP UPDATE FAILED")
+
+		}
+	}
+	return 0
+
+}

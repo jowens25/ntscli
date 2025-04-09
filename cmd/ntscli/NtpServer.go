@@ -12,6 +12,7 @@ func init() {
 	ntp.AddCommand(mac)
 	ntp.AddCommand(vlan)
 	ntp.AddCommand(mode)
+	ntp.AddCommand(utc)
 
 	// ntp reads
 	ntp.Flags().BoolP("core", "c", false, "show core address")
@@ -41,6 +42,12 @@ func init() {
 	vlan.Flags().BoolP("enable", "e", false, "enable vlan")
 	vlan.Flags().BoolP("disable", "d", false, "disablevlan")
 	vlan.Flags().StringP("value", "v", "", "set vlan value")
+
+	utc.Flags().StringP("smearing", "s", "", "enable UTC smearing")
+	utc.Flags().String("leap61", "", "enable UTC leap 61")
+	utc.Flags().String("leap59", "", "enable UTC leap 59")
+	utc.Flags().StringP("enable-offset", "e", "", "enable UTC offset")
+	utc.Flags().StringP("offset", "o", "", "set UTC offset value")
 
 }
 
@@ -93,6 +100,18 @@ var vlan = &cobra.Command{
 	Use:     "vlan",
 	Aliases: []string{"vlan"},
 	Short:   "virtual network",
+	Args:    cobra.ArbitraryArgs,
+	Run: func(cmd *cobra.Command, args []string) {
+		ntscli.Ntp(cmd)
+
+	},
+}
+
+var utc = &cobra.Command{
+
+	Use:     "utc",
+	Aliases: []string{"utc"},
+	Short:   "Coordinated Universal Time",
 	Args:    cobra.ArbitraryArgs,
 	Run: func(cmd *cobra.Command, args []string) {
 		ntscli.Ntp(cmd)
