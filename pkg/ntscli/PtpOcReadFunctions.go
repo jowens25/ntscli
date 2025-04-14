@@ -1,5 +1,23 @@
 package ntscli
 
+import "fmt"
+
+// read NtpServer STATUS
+func readPtpOcStatus() string {
+	tempData = 0x00000000
+	enabled := ""
+	if readRegister(PtpOcCore.BaseAddrLReg+ptpOc["ControlReg"], &tempData) == 0 {
+		if (tempData & 0x00000001) == 0 {
+			enabled = "disabled"
+		} else {
+			enabled = "enabled"
+		}
+	} else {
+		enabled = "disabled"
+	}
+	return enabled
+}
+
 /*
 
 void Ucm_PtpOcTab::ptp_oc_read_values(void)
@@ -1402,3 +1420,7 @@ void Ucm_PtpOcTab::ptp_oc_read_values(void)
     }
 }
 */
+
+func showPtpOcStatus() {
+	fmt.Println("PTP OC STATUS:                  ", readPtpOcStatus())
+}

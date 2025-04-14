@@ -20,7 +20,7 @@ func writeNtpServerStatus(status string) {
 		log.Fatal("Please enter a valid status (enabled or disabled)")
 	}
 
-	if writeRegister(NtpCore.BaseAddrLReg+ntpServer.ControlReg, &tempData) == 0 {
+	if writeRegister(NtpServerCore.BaseAddrLReg+ntpServer["ControlReg"], &tempData) == 0 {
 		showNtpServerSTATUS()
 	} else {
 		log.Fatal(" VERBOSE ERROR WRITING NTP")
@@ -44,7 +44,7 @@ func writeNtpServerIpAddr(addr string) {
 func writeNtpServerIpMode(mode string) {
 	currentAddr := readNtpServerIpAddress()
 	tempData = 0x00000000
-	readRegister(NtpCore.BaseAddrLReg+ntpServer.ConfigModeReg, &tempData)
+	readRegister(NtpServerCore.BaseAddrLReg+ntpServer["ConfigModeReg"], &tempData)
 
 	if mode == "ipv4" {
 		tempData &= ^0x0000002 // Clear bit 16 (using NOT + AND)
@@ -59,9 +59,9 @@ func writeNtpServerIpMode(mode string) {
 
 	}
 
-	if writeRegister(NtpCore.BaseAddrLReg+ntpServer.ConfigModeReg, &tempData) == 0 {
+	if writeRegister(NtpServerCore.BaseAddrLReg+ntpServer["ConfigModeReg"], &tempData) == 0 {
 		tempData = 0x00000001
-		if writeRegister(NtpCore.BaseAddrLReg+ntpServer.ConfigControlReg, &tempData) == 0 {
+		if writeRegister(NtpServerCore.BaseAddrLReg+ntpServer["ConfigControlReg"], &tempData) == 0 {
 			writeNtpServerIpAddr(currentAddr)
 			showNtpServerIPMODE()
 			//showNtpServerIPADDRESS()
@@ -96,17 +96,17 @@ func writeNtpServerMac(macAddr string) {
 	tempData = tempData << 8
 	tempData |= (mac >> 40) & 0x000000FF
 
-	if writeRegister(NtpCore.BaseAddrLReg+ntpServer.ConfigMac1Reg, &tempData) == 0 { // first bit writes success
+	if writeRegister(NtpServerCore.BaseAddrLReg+ntpServer["ConfigMac1Reg"], &tempData) == 0 { // first bit writes success
 		//fmt.Println("after first write")
 		tempData = 0x00000000
 		tempData |= (mac >> 0) & 0x000000FF
 		tempData = tempData << 8
 		tempData |= (mac >> 8) & 0x000000FF
 
-		if writeRegister(NtpCore.BaseAddrLReg+ntpServer.ConfigMac2Reg, &tempData) == 0 { // second bit write success
+		if writeRegister(NtpServerCore.BaseAddrLReg+ntpServer["ConfigMac2Reg"], &tempData) == 0 { // second bit write success
 			//fmt.Println("after second write")
-			tempData = 0x00000004                                                               // write
-			if writeRegister(NtpCore.BaseAddrLReg+ntpServer.ConfigControlReg, &tempData) == 0 { //update control to show change
+			tempData = 0x00000004                                                                        // write
+			if writeRegister(NtpServerCore.BaseAddrLReg+ntpServer["ConfigControlReg"], &tempData) == 0 { //update control to show change
 				showNtpServerMACADDRESS()
 			} else {
 				fmt.Println("NTP SERVER MAC ADDRESS UPDATE FAILED")
@@ -123,7 +123,7 @@ func writeNtpServerMac(macAddr string) {
 func writeNtpServerVlanEnable(mode string) {
 
 	var currentSettings int64
-	readRegister(NtpCore.BaseAddrLReg+ntpServer.ConfigVlanReg, &currentSettings)
+	readRegister(NtpServerCore.BaseAddrLReg+ntpServer["ConfigVlanReg"], &currentSettings)
 	currentSettings &= 0x0000FFFF
 
 	if mode == "enable" {
@@ -134,10 +134,42 @@ func writeNtpServerVlanEnable(mode string) {
 		tempData = 0x00000000 | currentSettings
 	}
 
-	if writeRegister(NtpCore.BaseAddrLReg+ntpServer.ConfigVlanReg, &tempData) == 0 {
+	if writeRegister(NtpServerCore.BaseAddrLReg+ntpServer["ConfigVlanReg"], &tempData) == 0 {
 
 		tempData = 0x00000002
-		if writeRegister(NtpCore.BaseAddrLReg+ntpServer.ConfigControlReg, &tempData) == 0 {
+		if writeRegister(NtpServerCore.BaseAddrLReg+ntpServer["ConfigControlReg"], &tempData) == 0 {
+			showNtpServerVLANENABLED()
+		} else {
+			fmt.Println("vlan enabled: false")
+
+		}
+
+	} else {
+		fmt.Println("vlan enabled: false")
+
+	}
+
+}
+
+// NtpServer VLAN ENABLED
+func writeVlanEnable(baseAddr int64, registers map[string]int64, mode string) {
+
+	var currentSettings int64
+	readRegister(baseAddr+registers["ConfigVlanReg"], &currentSettings)
+	currentSettings &= 0x0000FFFF
+
+	if mode == "enable" {
+		tempData = 0x00010000 | currentSettings
+	} else if mode == "disable" {
+		tempData = 0x00000000 | currentSettings
+	} else {
+		tempData = 0x00000000 | currentSettings
+	}
+
+	if writeRegister(baseAddr+registers["ConfigVlanReg"], &tempData) == 0 {
+
+		tempData = 0x00000002
+		if writeRegister(baseAddr+registers["ConfigControlReg"], &tempData) == 0 {
 			showNtpServerVLANENABLED()
 		} else {
 			fmt.Println("vlan enabled: false")
@@ -154,7 +186,7 @@ func writeNtpServerVlanEnable(mode string) {
 // NtpServer VLAN VALUE
 func writeNtpServerVlanValue(value string) {
 	value, _ = strings.CutPrefix(value, "0x")
-	readRegister(NtpCore.BaseAddrLReg+ntpServer.ConfigVlanReg, &tempData)
+	readRegister(NtpServerCore.BaseAddrLReg+ntpServer["ConfigVlanReg"], &tempData)
 	v, err := strconv.ParseInt(value, 16, 64)
 	if err != nil {
 		log.Fatal("error")
@@ -162,9 +194,9 @@ func writeNtpServerVlanValue(value string) {
 	tempData &= 0xFFFF0000 // keep the current value in the upper part of the register
 	tempData |= v
 
-	if writeRegister(NtpCore.BaseAddrLReg+ntpServer.ConfigVlanReg, &tempData) == 0 {
+	if writeRegister(NtpServerCore.BaseAddrLReg+ntpServer["ConfigVlanReg"], &tempData) == 0 {
 		tempData = 0x00000002
-		if writeRegister(NtpCore.BaseAddrLReg+ntpServer.ConfigControlReg, &tempData) == 0 {
+		if writeRegister(NtpServerCore.BaseAddrLReg+ntpServer["ConfigControlReg"], &tempData) == 0 {
 			showNtpServerVLANVALUE()
 		} else {
 			fmt.Println("vlan enabled: false")
@@ -179,15 +211,15 @@ func writeNtpServerVlanValue(value string) {
 // NtpServer UNICAST
 func writeNtpServerUnicastMode(en string) {
 	tempData = 0x00000000
-	readRegister(NtpCore.BaseAddrLReg+ntpServer.ConfigModeReg, &tempData)
+	readRegister(NtpServerCore.BaseAddrLReg+ntpServer["ConfigModeReg"], &tempData)
 	tempData &= ^0x00000010 // Clear bit 16 (using NOT + AND)
 	if en == "enabled" {
 		tempData |= 0x00000010 // set unicast on
 	}
 
-	writeRegister(NtpCore.BaseAddrLReg+ntpServer.ConfigModeReg, &tempData)
+	writeRegister(NtpServerCore.BaseAddrLReg+ntpServer["ConfigModeReg"], &tempData)
 	tempData = 0x00000001
-	if writeRegister(NtpCore.BaseAddrLReg+ntpServer.ConfigControlReg, &tempData) == 0 {
+	if writeRegister(NtpServerCore.BaseAddrLReg+ntpServer["ConfigControlReg"], &tempData) == 0 {
 		showNtpServerUNICAST()
 	}
 }
@@ -195,15 +227,15 @@ func writeNtpServerUnicastMode(en string) {
 // NtpServer MULTICAST
 func writeNtpServerMulticastMode(en string) {
 	tempData = 0x00000000
-	readRegister(NtpCore.BaseAddrLReg+ntpServer.ConfigModeReg, &tempData)
+	readRegister(NtpServerCore.BaseAddrLReg+ntpServer["ConfigModeReg"], &tempData)
 	tempData &= ^0x00000020 // Clear bit 16 (using NOT + AND)
 	if en == "enabled" {
 		tempData |= 0x00000020 // set multicast on
 	}
 
-	writeRegister(NtpCore.BaseAddrLReg+ntpServer.ConfigModeReg, &tempData)
+	writeRegister(NtpServerCore.BaseAddrLReg+ntpServer["ConfigModeReg"], &tempData)
 	tempData = 0x00000001
-	if writeRegister(NtpCore.BaseAddrLReg+ntpServer.ConfigControlReg, &tempData) == 0 {
+	if writeRegister(NtpServerCore.BaseAddrLReg+ntpServer["ConfigControlReg"], &tempData) == 0 {
 		showNtpServerMULTICAST()
 	}
 }
@@ -211,15 +243,15 @@ func writeNtpServerMulticastMode(en string) {
 // NtpServer BROADCAST
 func writeNtpServerBroadcastMode(en string) {
 	tempData = 0x00000000
-	readRegister(NtpCore.BaseAddrLReg+ntpServer.ConfigModeReg, &tempData)
+	readRegister(NtpServerCore.BaseAddrLReg+ntpServer["ConfigModeReg"], &tempData)
 	tempData &= ^0x00000040 // set broadcast off
 	if en == "enabled" {
 		tempData |= 0x00000040 // set broadcast on
 	}
 
-	writeRegister(NtpCore.BaseAddrLReg+ntpServer.ConfigModeReg, &tempData)
+	writeRegister(NtpServerCore.BaseAddrLReg+ntpServer["ConfigModeReg"], &tempData)
 	tempData = 0x00000001
-	if writeRegister(NtpCore.BaseAddrLReg+ntpServer.ConfigControlReg, &tempData) == 0 {
+	if writeRegister(NtpServerCore.BaseAddrLReg+ntpServer["ConfigControlReg"], &tempData) == 0 {
 		showNtpServerBROADCAST()
 	}
 
@@ -228,7 +260,7 @@ func writeNtpServerBroadcastMode(en string) {
 // NtpServer PRECISION
 func writeNtpServerPrecision(value string) {
 	tempData = 0x00000000
-	readRegister(NtpCore.BaseAddrLReg+ntpServer.ConfigModeReg, &tempData)
+	readRegister(NtpServerCore.BaseAddrLReg+ntpServer["ConfigModeReg"], &tempData)
 
 	val, err := strconv.ParseInt(value, 10, 64)
 	if err != nil {
@@ -237,9 +269,9 @@ func writeNtpServerPrecision(value string) {
 	tempData &= ^((0xFFFFFFFF & 0x000000FF) << 8)
 	tempData |= ((val & 0x000000FF) << 8)
 
-	writeRegister(NtpCore.BaseAddrLReg+ntpServer.ConfigModeReg, &tempData)
+	writeRegister(NtpServerCore.BaseAddrLReg+ntpServer["ConfigModeReg"], &tempData)
 	tempData = 0x00000001
-	if writeRegister(NtpCore.BaseAddrLReg+ntpServer.ConfigControlReg, &tempData) == 0 {
+	if writeRegister(NtpServerCore.BaseAddrLReg+ntpServer["ConfigControlReg"], &tempData) == 0 {
 		showNtpServerPRECISION()
 	}
 }
@@ -247,7 +279,7 @@ func writeNtpServerPrecision(value string) {
 // NtpServer POLL INTERVAL
 func writeNtpServerPollInternal(value string) {
 	tempData = 0x00000000
-	readRegister(NtpCore.BaseAddrLReg+ntpServer.ConfigModeReg, &tempData)
+	readRegister(NtpServerCore.BaseAddrLReg+ntpServer["ConfigModeReg"], &tempData)
 
 	val, err := strconv.ParseInt(value, 10, 64)
 	if err != nil {
@@ -257,9 +289,9 @@ func writeNtpServerPollInternal(value string) {
 
 	tempData |= ((val & 0x000000FF) << 16)
 
-	writeRegister(NtpCore.BaseAddrLReg+ntpServer.ConfigModeReg, &tempData)
+	writeRegister(NtpServerCore.BaseAddrLReg+ntpServer["ConfigModeReg"], &tempData)
 	tempData = 0x00000001
-	if writeRegister(NtpCore.BaseAddrLReg+ntpServer.ConfigControlReg, &tempData) == 0 {
+	if writeRegister(NtpServerCore.BaseAddrLReg+ntpServer["ConfigControlReg"], &tempData) == 0 {
 		showNtpServerPOLLINTERVAL()
 	}
 }
@@ -267,7 +299,7 @@ func writeNtpServerPollInternal(value string) {
 // NtpServer STRATUM
 func writeNtpServerStratumValue(value string) {
 	tempData = 0x00000000
-	readRegister(NtpCore.BaseAddrLReg+ntpServer.ConfigModeReg, &tempData)
+	readRegister(NtpServerCore.BaseAddrLReg+ntpServer["ConfigModeReg"], &tempData)
 
 	val, err := strconv.ParseInt(value, 10, 64)
 	if err != nil {
@@ -277,9 +309,9 @@ func writeNtpServerStratumValue(value string) {
 
 	tempData |= ((val & 0x000000FF) << 24)
 
-	writeRegister(NtpCore.BaseAddrLReg+ntpServer.ConfigModeReg, &tempData)
+	writeRegister(NtpServerCore.BaseAddrLReg+ntpServer["ConfigModeReg"], &tempData)
 	tempData = 0x00000001
-	if writeRegister(NtpCore.BaseAddrLReg+ntpServer.ConfigControlReg, &tempData) == 0 {
+	if writeRegister(NtpServerCore.BaseAddrLReg+ntpServer["ConfigControlReg"], &tempData) == 0 {
 		showNtpServerSTRATUM()
 	}
 
@@ -318,10 +350,10 @@ func writeNtpServerReferenceId(id string) {
 
 		fmt.Println("DEBUG: ref id write: ", tempData)
 
-		if writeRegister(NtpCore.BaseAddrLReg+ntpServer.ConfigReferenceIdReg, &tempData) == 0 {
+		if writeRegister(NtpServerCore.BaseAddrLReg+ntpServer["ConfigReferenceIdReg"], &tempData) == 0 {
 			tempData = 0x00000010
 
-			if writeRegister(NtpCore.BaseAddrLReg+ntpServer.ConfigControlReg, &tempData) == 0 {
+			if writeRegister(NtpServerCore.BaseAddrLReg+ntpServer["ConfigControlReg"], &tempData) == 0 {
 				// do nothing if both write successfully
 			} else {
 
@@ -340,7 +372,7 @@ func writeNtpServerReferenceId(id string) {
 // NtpServer UTC SMEARING
 func writeNtpServerUTCSmearing(en string) {
 	tempData = 0x00000000
-	readRegister(NtpCore.BaseAddrLReg+ntpServer.UtcInfoReg, &tempData)
+	readRegister(NtpServerCore.BaseAddrLReg+ntpServer["UtcInfoReg"], &tempData)
 
 	tempData &= ^0x00000100 // Clear bit (using NOT + AND)
 
@@ -351,9 +383,9 @@ func writeNtpServerUTCSmearing(en string) {
 		tempData |= 0x00000000
 	}
 
-	writeRegister(NtpCore.BaseAddrLReg+ntpServer.UtcInfoReg, &tempData)
+	writeRegister(NtpServerCore.BaseAddrLReg+ntpServer["UtcInfoReg"], &tempData)
 	tempData = 0x00000003 // write utc info and leap
-	writeRegister(NtpCore.BaseAddrLReg+ntpServer.UtcInfoControlReg, &tempData)
+	writeRegister(NtpServerCore.BaseAddrLReg+ntpServer["UtcInfoControlReg"], &tempData)
 
 	showNtpServerUTCSMEARING()
 
@@ -365,7 +397,7 @@ func writeNtpServerUTCSmearing(en string) {
 // NtpServer UTC LEAP 61
 func writeNtpServerUTCLeap61(en string) {
 	tempData = 0x00000000
-	readRegister(NtpCore.BaseAddrLReg+ntpServer.UtcInfoReg, &tempData)
+	readRegister(NtpServerCore.BaseAddrLReg+ntpServer["UtcInfoReg"], &tempData)
 
 	tempData &= ^0x00000800 // Clear bit (using NOT + AND)
 
@@ -376,9 +408,9 @@ func writeNtpServerUTCLeap61(en string) {
 		tempData |= 0x00000000
 	}
 
-	writeRegister(NtpCore.BaseAddrLReg+ntpServer.UtcInfoReg, &tempData)
+	writeRegister(NtpServerCore.BaseAddrLReg+ntpServer["UtcInfoReg"], &tempData)
 	tempData = 0x00000003 // write utc info and leap
-	writeRegister(NtpCore.BaseAddrLReg+ntpServer.UtcInfoControlReg, &tempData)
+	writeRegister(NtpServerCore.BaseAddrLReg+ntpServer["UtcInfoControlReg"], &tempData)
 
 	showNtpServerUTCLEAP61()
 }
@@ -386,7 +418,7 @@ func writeNtpServerUTCLeap61(en string) {
 // NtpServer UTC LEAP 59
 func writeNtpServerUTCLeap59(en string) {
 	tempData = 0x00000000
-	readRegister(NtpCore.BaseAddrLReg+ntpServer.UtcInfoReg, &tempData)
+	readRegister(NtpServerCore.BaseAddrLReg+ntpServer["UtcInfoReg"], &tempData)
 
 	tempData &= ^0x00001000 // Clear bit (using NOT + AND)
 
@@ -397,9 +429,9 @@ func writeNtpServerUTCLeap59(en string) {
 		tempData |= 0x00000000
 	}
 
-	writeRegister(NtpCore.BaseAddrLReg+ntpServer.UtcInfoReg, &tempData)
+	writeRegister(NtpServerCore.BaseAddrLReg+ntpServer["UtcInfoReg"], &tempData)
 	tempData = 0x00000003 // write utc info and leap
-	writeRegister(NtpCore.BaseAddrLReg+ntpServer.UtcInfoControlReg, &tempData)
+	writeRegister(NtpServerCore.BaseAddrLReg+ntpServer["UtcInfoControlReg"], &tempData)
 
 	showNtpServerUTCLEAP59()
 }
@@ -407,7 +439,7 @@ func writeNtpServerUTCLeap59(en string) {
 // NtpServer UTC OFFSET ENABLE
 func writeNtpServerUTCOffsetEnable(en string) {
 	tempData = 0x00000000
-	readRegister(NtpCore.BaseAddrLReg+ntpServer.UtcInfoReg, &tempData)
+	readRegister(NtpServerCore.BaseAddrLReg+ntpServer["UtcInfoReg"], &tempData)
 
 	tempData &= ^0x00002000 // Clear bit (using NOT + AND)
 
@@ -418,9 +450,9 @@ func writeNtpServerUTCOffsetEnable(en string) {
 		tempData |= 0x00000000
 	}
 
-	writeRegister(NtpCore.BaseAddrLReg+ntpServer.UtcInfoReg, &tempData)
+	writeRegister(NtpServerCore.BaseAddrLReg+ntpServer["UtcInfoReg"], &tempData)
 	tempData = 0x00000003 // write utc info and leap
-	writeRegister(NtpCore.BaseAddrLReg+ntpServer.UtcInfoControlReg, &tempData)
+	writeRegister(NtpServerCore.BaseAddrLReg+ntpServer["UtcInfoControlReg"], &tempData)
 
 	showNtpServerUTCOFFSETENABLE()
 }
@@ -430,7 +462,7 @@ func writeNtpServerUTCOffsetEnable(en string) {
 func writeNtpServerUTCOffsetValue(value string) {
 
 	tempData = 0x00000000
-	readRegister(NtpCore.BaseAddrLReg+ntpServer.UtcInfoReg, &tempData)
+	readRegister(NtpServerCore.BaseAddrLReg+ntpServer["UtcInfoReg"], &tempData)
 	tempData &= 0x0000FFFF // keep the current value in the lower part of the register
 
 	val, err := strconv.ParseInt(value, 10, 64)
@@ -443,9 +475,9 @@ func writeNtpServerUTCOffsetValue(value string) {
 
 		tempData |= ((val & 0x0000FFFF) << 16)
 
-		writeRegister(NtpCore.BaseAddrLReg+ntpServer.UtcInfoReg, &tempData)
+		writeRegister(NtpServerCore.BaseAddrLReg+ntpServer["UtcInfoReg"], &tempData)
 		tempData = 0x00000003 // write utc info and leap
-		writeRegister(NtpCore.BaseAddrLReg+ntpServer.UtcInfoControlReg, &tempData)
+		writeRegister(NtpServerCore.BaseAddrLReg+ntpServer["UtcInfoControlReg"], &tempData)
 
 		showNtpServerUTCOFFSETVALUE()
 	}
@@ -461,7 +493,7 @@ func writeNtpServerCountControl() {
 	tempData = 0x00000000
 	tempData |= 0x00000001 // enable
 
-	writeRegister(NtpCore.BaseAddrLReg+ntpServer.CountControlReg, &tempData)
+	writeRegister(NtpServerCore.BaseAddrLReg+ntpServer["CountControlReg"], &tempData)
 
 	showNtpServerBROADCASTCOUNT()
 }
@@ -494,9 +526,9 @@ func ip4_addr_to_register_value(addr string) int64 {
 
 		//fmt.Println("ipv4 ip? : ", tempData)
 
-		if writeRegister(NtpCore.BaseAddrLReg+ntpServer.ConfigIpReg, &tempData) == 0 {
+		if writeRegister(NtpServerCore.BaseAddrLReg+ntpServer["ConfigIpReg"], &tempData) == 0 {
 			tempData = 0x00000008 // write
-			if writeRegister(NtpCore.BaseAddrLReg+ntpServer.ConfigControlReg, &tempData) == 0 {
+			if writeRegister(NtpServerCore.BaseAddrLReg+ntpServer["ConfigControlReg"], &tempData) == 0 {
 				showNtpServerIPADDRESS()
 			} else {
 				fmt.Println("IP UPDATE FAILED")
@@ -538,7 +570,7 @@ func ip6_addr_to_register_value(addr string) int64 {
 		tempData = tempData << 8
 		tempData |= tempAddr[0] & 0x000000FF
 
-		if writeRegister(NtpCore.BaseAddrLReg+ntpServer.ConfigIpReg, &tempData) == 0 {
+		if writeRegister(NtpServerCore.BaseAddrLReg+ntpServer["ConfigIpReg"], &tempData) == 0 {
 			tempData = 0x00000000
 			tempData |= tempAddr[7] & 0x000000FF
 			tempData = tempData << 8
@@ -548,7 +580,7 @@ func ip6_addr_to_register_value(addr string) int64 {
 			tempData = tempData << 8
 			tempData |= tempAddr[4] & 0x000000FF
 
-			if writeRegister(NtpCore.BaseAddrLReg+ntpServer.ConfigIpv61Reg, &tempData) == 0 {
+			if writeRegister(NtpServerCore.BaseAddrLReg+ntpServer["ConfigIpv61Reg"], &tempData) == 0 {
 				tempData = 0x00000000
 				tempData |= tempAddr[11] & 0x000000FF
 				tempData = tempData << 8
@@ -558,7 +590,7 @@ func ip6_addr_to_register_value(addr string) int64 {
 				tempData = tempData << 8
 				tempData |= tempAddr[8] & 0x000000FF
 
-				if writeRegister(NtpCore.BaseAddrLReg+ntpServer.ConfigIpv62Reg, &tempData) == 0 {
+				if writeRegister(NtpServerCore.BaseAddrLReg+ntpServer["ConfigIpv62Reg"], &tempData) == 0 {
 					tempData = 0x00000000
 					tempData |= tempAddr[15] & 0x000000FF
 					tempData = tempData << 8
@@ -568,9 +600,9 @@ func ip6_addr_to_register_value(addr string) int64 {
 					tempData = tempData << 8
 					tempData |= tempAddr[12] & 0x000000FF
 
-					if writeRegister(NtpCore.BaseAddrLReg+ntpServer.ConfigIpv63Reg, &tempData) == 0 {
+					if writeRegister(NtpServerCore.BaseAddrLReg+ntpServer["ConfigIpv63Reg"], &tempData) == 0 {
 						tempData = 0x00000008 // write
-						if writeRegister(NtpCore.BaseAddrLReg+ntpServer.ConfigControlReg, &tempData) == 0 {
+						if writeRegister(NtpServerCore.BaseAddrLReg+ntpServer["ConfigControlReg"], &tempData) == 0 {
 
 							showNtpServerIPADDRESS()
 

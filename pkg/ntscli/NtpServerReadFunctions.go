@@ -11,7 +11,7 @@ import (
 func readNtpServerStatus() string {
 	tempData = 0x00000000
 	enabled := ""
-	if readRegister(NtpCore.BaseAddrLReg+ntpServer.ControlReg, &tempData) == 0 {
+	if readRegister(NtpServerCore.BaseAddrLReg+ntpServer["ControlReg"], &tempData) == 0 {
 		if (tempData & 0x00000001) == 0 {
 			enabled = "disabled"
 		} else {
@@ -25,7 +25,7 @@ func readNtpServerStatus() string {
 
 // read NtpServer INSTANCE
 func readNtpServerInstanceNumber() int64 {
-	return NtpCore.InstanceNumber
+	return NtpServerCore.InstanceNumber
 }
 
 // read NtpServer IP ADDRESS
@@ -37,7 +37,7 @@ func readNtpServerIpAddress() string {
 	if readNtpServerIpMode() == "IPv4" {
 		tempAddr := make([]byte, 4)
 		temp_ip4 := make([]int64, 4)
-		if readRegister(NtpCore.BaseAddrLReg+ntpServer.ConfigIpReg, &tempData) == 0 {
+		if readRegister(NtpServerCore.BaseAddrLReg+ntpServer["ConfigIpReg"], &tempData) == 0 {
 			temp_ip4[0] = (tempData >> 0) & 0x000000FF
 			temp_ip4[1] = (tempData >> 8) & 0x000000FF
 			temp_ip4[2] = (tempData >> 16) & 0x000000FF
@@ -66,25 +66,25 @@ func readNtpServerIpAddress() string {
 		//fmt.Println("IPV6 read")
 		tempAddr := make([]byte, 16)
 		temp_ip6 := make([]int64, 16)
-		if readRegister(NtpCore.BaseAddrLReg+ntpServer.ConfigIpReg, &tempData) == 0 {
+		if readRegister(NtpServerCore.BaseAddrLReg+ntpServer["ConfigIpReg"], &tempData) == 0 {
 			temp_ip6[0] = (tempData >> 0) & 0x000000FF
 			temp_ip6[1] = (tempData >> 8) & 0x000000FF
 			temp_ip6[2] = (tempData >> 16) & 0x000000FF
 			temp_ip6[3] = (tempData >> 24) & 0x000000FF
 
-			if readRegister(NtpCore.BaseAddrLReg+ntpServer.ConfigIpv61Reg, &tempData) == 0 {
+			if readRegister(NtpServerCore.BaseAddrLReg+ntpServer["ConfigIpv61Reg"], &tempData) == 0 {
 				temp_ip6[4] = (tempData >> 0) & 0x000000FF
 				temp_ip6[5] = (tempData >> 8) & 0x000000FF
 				temp_ip6[6] = (tempData >> 16) & 0x000000FF
 				temp_ip6[7] = (tempData >> 24) & 0x000000FF
 
-				if readRegister(NtpCore.BaseAddrLReg+ntpServer.ConfigIpv62Reg, &tempData) == 0 {
+				if readRegister(NtpServerCore.BaseAddrLReg+ntpServer["ConfigIpv62Reg"], &tempData) == 0 {
 					temp_ip6[8] = (tempData >> 0) & 0x000000FF
 					temp_ip6[9] = (tempData >> 8) & 0x000000FF
 					temp_ip6[10] = (tempData >> 16) & 0x000000FF
 					temp_ip6[11] = (tempData >> 24) & 0x000000FF
 
-					if readRegister(NtpCore.BaseAddrLReg+ntpServer.ConfigIpv63Reg, &tempData) == 0 {
+					if readRegister(NtpServerCore.BaseAddrLReg+ntpServer["ConfigIpv63Reg"], &tempData) == 0 {
 
 						temp_ip6[12] = (tempData >> 0) & 0x000000FF
 						temp_ip6[13] = (tempData >> 8) & 0x000000FF
@@ -137,7 +137,7 @@ func readNtpServerIpMode() string {
 	tempData = 0x00000000
 	ipMode := ""
 	// mode & server config
-	if readRegister(NtpCore.BaseAddrLReg+ntpServer.ConfigModeReg, &tempData) == 0 {
+	if readRegister(NtpServerCore.BaseAddrLReg+ntpServer["ConfigModeReg"], &tempData) == 0 {
 
 		if ((tempData >> 0) & 0x00000003) == 1 {
 			ipMode = "IPv4"
@@ -162,7 +162,7 @@ func readNtpServerMac() string {
 	// mac
 	this_string := make([]byte, 0, 32)
 
-	if readRegister(NtpCore.BaseAddrLReg+ntpServer.ConfigMac1Reg, &tempData) == 0 {
+	if readRegister(NtpServerCore.BaseAddrLReg+ntpServer["ConfigMac1Reg"], &tempData) == 0 {
 
 		this_string = append(this_string, fmt.Sprintf("%02x", (tempData>>0)&0x000000FF)...)
 		this_string = append(this_string, ':')
@@ -174,7 +174,7 @@ func readNtpServerMac() string {
 		this_string = append(this_string, fmt.Sprintf("%02x", (tempData>>24)&0x000000FF)...)
 		this_string = append(this_string, ':')
 
-		if readRegister(NtpCore.BaseAddrLReg+ntpServer.ConfigMac2Reg, &tempData) == 0 {
+		if readRegister(NtpServerCore.BaseAddrLReg+ntpServer["ConfigMac2Reg"], &tempData) == 0 {
 			this_string = append(this_string, fmt.Sprintf("%02x", (tempData>>0)&0x000000FF)...)
 			this_string = append(this_string, ':')
 
@@ -196,7 +196,7 @@ func readNtpServerMac() string {
 func readNtpServerVlanEnable() string {
 	tempData = 0x00000000
 	vlanMode := ""
-	if readRegister(NtpCore.BaseAddrLReg+ntpServer.ConfigVlanReg, &tempData) == 0 {
+	if readRegister(NtpServerCore.BaseAddrLReg+ntpServer["ConfigVlanReg"], &tempData) == 0 {
 		if (tempData & 0x00010000) == 0 {
 			vlanMode = "DISABLED"
 		} else {
@@ -213,7 +213,23 @@ func readNtpServerVlanEnable() string {
 func readNtpServerVlanValue() string {
 	tempData = 0x00000000
 	vlanValue := ""
-	if readRegister(NtpCore.BaseAddrLReg+ntpServer.ConfigVlanReg, &tempData) == 0 {
+	if readRegister(NtpServerCore.BaseAddrLReg+ntpServer["ConfigVlanReg"], &tempData) == 0 {
+		tempData &= 0x0000FFFF
+		vlanValue = fmt.Sprintf("0x%04x", tempData)
+	} else {
+		vlanValue = "NA"
+	}
+
+	return vlanValue
+}
+
+// read VLAN VALUE
+func readVlanValue(addr int64) string {
+	tempData = 0x00000000
+	vlanValue := ""
+	if readRegister(addr, &tempData) == 0 {
+
+		//if readRegister(NtpServerCore.BaseAddrLReg+ntpServer["ConfigVlanReg"], &tempData) == 0 {
 		tempData &= 0x0000FFFF
 		vlanValue = fmt.Sprintf("0x%04x", tempData)
 	} else {
@@ -228,7 +244,7 @@ func readNtpServerUnicastMode() string {
 	tempData = 0x00000000
 	unicastMode := ""
 	// mode & server config
-	if readRegister(NtpCore.BaseAddrLReg+ntpServer.ConfigModeReg, &tempData) == 0 {
+	if readRegister(NtpServerCore.BaseAddrLReg+ntpServer["ConfigModeReg"], &tempData) == 0 {
 		if (tempData & 0x00000010) == 0 {
 			unicastMode = "DISABLED"
 		} else {
@@ -247,7 +263,7 @@ func readNtpServerMulticastMode() string {
 	tempData = 0x00000000
 	multicastMode := ""
 	// mode & server config
-	if readRegister(NtpCore.BaseAddrLReg+ntpServer.ConfigModeReg, &tempData) == 0 {
+	if readRegister(NtpServerCore.BaseAddrLReg+ntpServer["ConfigModeReg"], &tempData) == 0 {
 		if (tempData & 0x00000020) == 0 {
 			multicastMode = "DISABLED"
 		} else {
@@ -267,7 +283,7 @@ func readNtpServerBroadcastMode() string {
 	tempData = 0x00000000
 	broadcastMode := ""
 	// mode & server config
-	if readRegister(NtpCore.BaseAddrLReg+ntpServer.ConfigModeReg, &tempData) == 0 {
+	if readRegister(NtpServerCore.BaseAddrLReg+ntpServer["ConfigModeReg"], &tempData) == 0 {
 		if (tempData & 0x00000040) == 0 {
 			broadcastMode = "DISABLED"
 		} else {
@@ -285,7 +301,7 @@ func readNtpServerBroadcastMode() string {
 func readNtpServerPrecisionValue() rune {
 	tempData = 0x00000000
 	var PrecisionValue rune
-	if readRegister(NtpCore.BaseAddrLReg+ntpServer.ConfigModeReg, &tempData) == 0 {
+	if readRegister(NtpServerCore.BaseAddrLReg+ntpServer["ConfigModeReg"], &tempData) == 0 {
 		PrecisionValue = rune(int8(((tempData >> 8) & 0x000000FF)))
 
 	} else {
@@ -298,7 +314,7 @@ func readNtpServerPrecisionValue() rune {
 func readNtpServerPollIntervalValue() string {
 	tempData = 0x00000000
 	PollIntervalValue := ""
-	if readRegister(NtpCore.BaseAddrLReg+ntpServer.ConfigModeReg, &tempData) == 0 {
+	if readRegister(NtpServerCore.BaseAddrLReg+ntpServer["ConfigModeReg"], &tempData) == 0 {
 		PollIntervalValue = strconv.FormatInt(((tempData >> 16) & 0x000000FF), 10) // Base 10
 	} else {
 		PollIntervalValue = "NA"
@@ -311,7 +327,7 @@ func readNtpServerStratumValue() string {
 	tempData = 0x00000000
 	StratumValue := ""
 	// mode & server config
-	if readRegister(NtpCore.BaseAddrLReg+ntpServer.ConfigModeReg, &tempData) == 0 {
+	if readRegister(NtpServerCore.BaseAddrLReg+ntpServer["ConfigModeReg"], &tempData) == 0 {
 		StratumValue = strconv.FormatInt(((tempData >> 24) & 0x000000FF), 10) // Base 10
 	} else {
 		StratumValue = "NA"
@@ -324,7 +340,7 @@ func readNtpServerReferenceId() string {
 	tempData = 0x00000000
 	referenceId := ""
 	// reference id
-	if readRegister(NtpCore.BaseAddrLReg+ntpServer.ConfigReferenceIdReg, &tempData) == 0 {
+	if readRegister(NtpServerCore.BaseAddrLReg+ntpServer["ConfigReferenceIdReg"], &tempData) == 0 {
 		var temp_string []byte
 		temp_string = append(temp_string, byte(((tempData >> 24) & 0x000000FF)))
 		temp_string = append(temp_string, byte(((tempData >> 16) & 0x000000FF)))
@@ -344,11 +360,11 @@ func readNtpServerUTCSmearing() string {
 	tempData = 0x40000000
 	utcSmearing := "NA"
 
-	if writeRegister(NtpCore.BaseAddrLReg+ntpServer.UtcInfoControlReg, &tempData) == 0 {
+	if writeRegister(NtpServerCore.BaseAddrLReg+ntpServer["UtcInfoControlReg"], &tempData) == 0 {
 		for i := range 10 {
-			if readRegister(NtpCore.BaseAddrLReg+ntpServer.UtcInfoControlReg, &tempData) == 0 {
+			if readRegister(NtpServerCore.BaseAddrLReg+ntpServer["UtcInfoControlReg"], &tempData) == 0 {
 				if (tempData & 0x80000000) != 0 {
-					if readRegister(NtpCore.BaseAddrLReg+ntpServer.UtcInfoReg, &tempData) == 0 {
+					if readRegister(NtpServerCore.BaseAddrLReg+ntpServer["UtcInfoReg"], &tempData) == 0 {
 						if (tempData & 0x00000100) == 0 {
 							utcSmearing = "FALSE"
 						} else {
@@ -379,11 +395,11 @@ func readNtpServerUTCLeap61InProgress() string {
 	tempData = 0x40000000
 	utcLeap61InProgress := "NA"
 
-	if writeRegister(NtpCore.BaseAddrLReg+ntpServer.UtcInfoControlReg, &tempData) == 0 {
+	if writeRegister(NtpServerCore.BaseAddrLReg+ntpServer["UtcInfoControlReg"], &tempData) == 0 {
 		for i := range 10 {
-			if readRegister(NtpCore.BaseAddrLReg+ntpServer.UtcInfoControlReg, &tempData) == 0 {
+			if readRegister(NtpServerCore.BaseAddrLReg+ntpServer["UtcInfoControlReg"], &tempData) == 0 {
 				if (tempData & 0x80000000) != 0 {
-					if readRegister(NtpCore.BaseAddrLReg+ntpServer.UtcInfoReg, &tempData) == 0 {
+					if readRegister(NtpServerCore.BaseAddrLReg+ntpServer["UtcInfoReg"], &tempData) == 0 {
 						if (tempData & 0x00000200) == 0 {
 							utcLeap61InProgress = "FALSE"
 						} else {
@@ -415,11 +431,11 @@ func readNtpServerUTCLeap59InProgress() string {
 	tempData = 0x40000000
 	utcLeap59InProgress := "NA"
 
-	if writeRegister(NtpCore.BaseAddrLReg+ntpServer.UtcInfoControlReg, &tempData) == 0 {
+	if writeRegister(NtpServerCore.BaseAddrLReg+ntpServer["UtcInfoControlReg"], &tempData) == 0 {
 		for i := range 10 {
-			if readRegister(NtpCore.BaseAddrLReg+ntpServer.UtcInfoControlReg, &tempData) == 0 {
+			if readRegister(NtpServerCore.BaseAddrLReg+ntpServer["UtcInfoControlReg"], &tempData) == 0 {
 				if (tempData & 0x80000000) != 0 {
-					if readRegister(NtpCore.BaseAddrLReg+ntpServer.UtcInfoReg, &tempData) == 0 {
+					if readRegister(NtpServerCore.BaseAddrLReg+ntpServer["UtcInfoReg"], &tempData) == 0 {
 						if (tempData & 0x00000400) == 0 {
 							utcLeap59InProgress = "FALSE"
 						} else {
@@ -451,11 +467,11 @@ func readNtpServerUTCLeap61() string {
 	tempData = 0x40000000
 	utcLeap61 := "NA"
 
-	if writeRegister(NtpCore.BaseAddrLReg+ntpServer.UtcInfoControlReg, &tempData) == 0 {
+	if writeRegister(NtpServerCore.BaseAddrLReg+ntpServer["UtcInfoControlReg"], &tempData) == 0 {
 		for i := range 10 {
-			if readRegister(NtpCore.BaseAddrLReg+ntpServer.UtcInfoControlReg, &tempData) == 0 {
+			if readRegister(NtpServerCore.BaseAddrLReg+ntpServer["UtcInfoControlReg"], &tempData) == 0 {
 				if (tempData & 0x80000000) != 0 {
-					if readRegister(NtpCore.BaseAddrLReg+ntpServer.UtcInfoReg, &tempData) == 0 {
+					if readRegister(NtpServerCore.BaseAddrLReg+ntpServer["UtcInfoReg"], &tempData) == 0 {
 						if (tempData & 0x00000800) == 0 {
 							utcLeap61 = "FALSE"
 						} else {
@@ -487,11 +503,11 @@ func readNtpServerUTCLeap59() string {
 	tempData = 0x40000000
 	utcLeap59 := "NA"
 
-	if writeRegister(NtpCore.BaseAddrLReg+ntpServer.UtcInfoControlReg, &tempData) == 0 {
+	if writeRegister(NtpServerCore.BaseAddrLReg+ntpServer["UtcInfoControlReg"], &tempData) == 0 {
 		for i := range 10 {
-			if readRegister(NtpCore.BaseAddrLReg+ntpServer.UtcInfoControlReg, &tempData) == 0 {
+			if readRegister(NtpServerCore.BaseAddrLReg+ntpServer["UtcInfoControlReg"], &tempData) == 0 {
 				if (tempData & 0x80000000) != 0 {
-					if readRegister(NtpCore.BaseAddrLReg+ntpServer.UtcInfoReg, &tempData) == 0 {
+					if readRegister(NtpServerCore.BaseAddrLReg+ntpServer["UtcInfoReg"], &tempData) == 0 {
 						if (tempData & 0x00001000) == 0 {
 							utcLeap59 = "FALSE"
 						} else {
@@ -523,11 +539,11 @@ func readNtpServerUTCOffsetEnable() string {
 	tempData = 0x40000000
 	offsetEnable := "NA"
 
-	if writeRegister(NtpCore.BaseAddrLReg+ntpServer.UtcInfoControlReg, &tempData) == 0 {
+	if writeRegister(NtpServerCore.BaseAddrLReg+ntpServer["UtcInfoControlReg"], &tempData) == 0 {
 		for i := range 10 {
-			if readRegister(NtpCore.BaseAddrLReg+ntpServer.UtcInfoControlReg, &tempData) == 0 {
+			if readRegister(NtpServerCore.BaseAddrLReg+ntpServer["UtcInfoControlReg"], &tempData) == 0 {
 				if (tempData & 0x80000000) != 0 {
-					if readRegister(NtpCore.BaseAddrLReg+ntpServer.UtcInfoReg, &tempData) == 0 {
+					if readRegister(NtpServerCore.BaseAddrLReg+ntpServer["UtcInfoReg"], &tempData) == 0 {
 						if (tempData & 0x00002000) == 0 {
 							offsetEnable = "FALSE"
 						} else {
@@ -559,11 +575,11 @@ func readNtpServerUTCOffsetValue() string {
 	tempData = 0x40000000
 	utcOffsetValue := "NA"
 
-	if writeRegister(NtpCore.BaseAddrLReg+ntpServer.UtcInfoControlReg, &tempData) == 0 {
+	if writeRegister(NtpServerCore.BaseAddrLReg+ntpServer["UtcInfoControlReg"], &tempData) == 0 {
 		for i := range 10 {
-			if readRegister(NtpCore.BaseAddrLReg+ntpServer.UtcInfoControlReg, &tempData) == 0 {
+			if readRegister(NtpServerCore.BaseAddrLReg+ntpServer["UtcInfoControlReg"], &tempData) == 0 {
 				if (tempData & 0x80000000) != 0 {
-					if readRegister(NtpCore.BaseAddrLReg+ntpServer.UtcInfoReg, &tempData) == 0 {
+					if readRegister(NtpServerCore.BaseAddrLReg+ntpServer["UtcInfoReg"], &tempData) == 0 {
 
 						utcOffsetValue = strconv.FormatInt((tempData>>16)&0x0000FFFF, 10) // Base 10
 
@@ -591,7 +607,7 @@ func readNtpServerUTCOffsetValue() string {
 func readNtpServerRequestCount() string {
 	tempData = 0x00000000
 	requests := ""
-	if readRegister(NtpCore.BaseAddrLReg+ntpServer.CountReqReg, &tempData) == 0 {
+	if readRegister(NtpServerCore.BaseAddrLReg+ntpServer["CountReqReg"], &tempData) == 0 {
 		requests = fmt.Sprintf("%d", tempData)
 	} else {
 		requests = "NA"
@@ -603,7 +619,7 @@ func readNtpServerRequestCount() string {
 func readNtpServerResponseCount() string {
 	tempData = 0x00000000
 	responses := ""
-	if readRegister(NtpCore.BaseAddrLReg+ntpServer.CountRespReg, &tempData) == 0 {
+	if readRegister(NtpServerCore.BaseAddrLReg+ntpServer["CountRespReg"], &tempData) == 0 {
 		responses = fmt.Sprintf("%d", tempData)
 
 	} else {
@@ -616,7 +632,7 @@ func readNtpServerResponseCount() string {
 func readNtpServerRequestsDropped() string {
 	tempData = 0x00000000
 	dropped := ""
-	if readRegister(NtpCore.BaseAddrLReg+ntpServer.CountReqDroppedReg, &tempData) == 0 {
+	if readRegister(NtpServerCore.BaseAddrLReg+ntpServer["CountReqDroppedReg"], &tempData) == 0 {
 		dropped = fmt.Sprintf("%d", tempData)
 
 	} else {
@@ -629,7 +645,7 @@ func readNtpServerRequestsDropped() string {
 func readNtpServerBroadcastCount() string {
 	tempData = 0x00000000
 	broadcasts := ""
-	if readRegister(NtpCore.BaseAddrLReg+ntpServer.CountBroadcastReg, &tempData) == 0 {
+	if readRegister(NtpServerCore.BaseAddrLReg+ntpServer["CountBroadcastReg"], &tempData) == 0 {
 		broadcasts = fmt.Sprintf("%d", tempData)
 
 	} else {
@@ -642,7 +658,7 @@ func readNtpServerBroadcastCount() string {
 func readNtpServerCountControl() string {
 	tempData = 0x00000000
 	clear := ""
-	if readRegister(NtpCore.BaseAddrLReg+ntpServer.CountControlReg, &tempData) == 0 {
+	if readRegister(NtpServerCore.BaseAddrLReg+ntpServer["CountControlReg"], &tempData) == 0 {
 		if (tempData & 0x00000001) == 0 {
 			clear = "false"
 		} else {
@@ -662,7 +678,7 @@ func readNtpServerVersion() string {
 	tempData = 0x00000000
 	// version
 	version := ""
-	if readRegister(NtpCore.BaseAddrLReg+ntpServer.VersionReg, &tempData) == 0 {
+	if readRegister(NtpServerCore.BaseAddrLReg+ntpServer["VersionReg"], &tempData) == 0 {
 		version = fmt.Sprintf("0x%02x", tempData) // base 16 string format
 	} else {
 		version = "NA"

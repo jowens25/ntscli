@@ -8,46 +8,47 @@ import (
 	"github.com/spf13/pflag"
 )
 
-func NtpServer(cmd *cobra.Command) {
+func NtpUtc(cmd *cobra.Command) {
 
 	cmd.Flags().Visit(func(f *pflag.Flag) {
 
 		switch f.Name {
 
-		case "stratum":
+		case "smearing":
 			value, err := cmd.Flags().GetString(f.Name)
 			if err != nil {
 				log.Fatal("No such argument for property: ", f.Name, err)
 			}
-			writeNtpServerStratumValue(value)
+			writeNtpServerUTCSmearing(value)
 
-		case "poll-interval":
+		case "leap61":
 			value, err := cmd.Flags().GetString(f.Name)
 			if err != nil {
 				log.Fatal("No such argument for property: ", f.Name, err)
 			}
-			writeNtpServerPollInternal(value)
+			writeNtpServerUTCLeap61(value)
 
-		case "precision":
+		case "leap59":
 			value, err := cmd.Flags().GetString(f.Name)
 			if err != nil {
 				log.Fatal("No such argument for property: ", f.Name, err)
 			}
-			writeNtpServerPrecision(value)
+			writeNtpServerUTCLeap59(value)
 
-		case "reference":
+		case "enable-offset":
 			value, err := cmd.Flags().GetString(f.Name)
 			if err != nil {
 				log.Fatal("No such argument for property: ", f.Name, err)
 			}
-			writeNtpServerReferenceId(value)
+			writeNtpServerUTCOffsetEnable(value)
 
-		case "list":
-
-			showNtpServerSTRATUM()
-			showNtpServerPOLLINTERVAL()
-			showNtpServerPRECISION()
-			showNtpServerREFERENCEID()
+		case "offset":
+			fmt.Println("offset flag")
+			value, err := cmd.Flags().GetString(f.Name)
+			if err != nil {
+				log.Fatal("No such argument for property: ", f.Name, err)
+			}
+			writeNtpServerUTCOffsetValue(value)
 
 		default:
 			fmt.Println("That does not appear to be a valid flag. Try: ", cmd.UsageString())
