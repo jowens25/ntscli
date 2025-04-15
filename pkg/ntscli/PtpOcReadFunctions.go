@@ -722,6 +722,421 @@ func readPtpOcDefaultDatasetNumPorts() string {
 	return numPorts
 }
 
+func readPtpOcPortDatasetPeerDelay() string {
+
+	tempData = 0x40000000
+	var tempDelay int64
+	peerDelay := ""
+
+	if writeRegister(PtpOcCore.BaseAddrLReg+ptpOc["PortDsControlReg"], &tempData) == 0 {
+		for i := range 10 {
+			if i < 9 {
+				if readRegister(PtpOcCore.BaseAddrLReg+ptpOc["PortDsControlReg"], &tempData) == 0 {
+					if tempData&0x80000000 != 0 {
+
+						if (readPtpOcDelayMechanismValue() == "E2E") || (readPtpOcDelayMechanismValue() == "E2E Unicast") {
+							// end to end delay
+							peerDelay = "NA"
+						} else if readRegister(PtpOcCore.BaseAddrLReg+ptpOc["PortDs1Reg"], &tempData) == 0 {
+							tempDelay = tempData
+							tempData = tempDelay << 32
+							if readRegister(PtpOcCore.BaseAddrLReg+ptpOc["PortDs2Reg"], &tempData) == 0 {
+								tempDelay |= tempData
+								tempDelay = tempDelay >> 16
+
+								peerDelay = fmt.Sprintf("%d", tempDelay)
+							} else {
+								peerDelay = "NA"
+							}
+						} else {
+							peerDelay = "NA"
+						}
+
+					} else {
+						peerDelay = "NA"
+
+					}
+					break // success so return
+				}
+			} else if i == 9 {
+				log.Fatal("read did not complete")
+			} else {
+				peerDelay = "NA"
+
+			}
+
+		}
+	}
+	return peerDelay
+}
+
+func readPtpOcPortDatasetState() string {
+	tempData = 0x40000000
+	state := ""
+
+	if writeRegister(PtpOcCore.BaseAddrLReg+ptpOc["PortDsControlReg"], &tempData) == 0 {
+		for i := range 10 {
+			if i < 9 {
+				if readRegister(PtpOcCore.BaseAddrLReg+ptpOc["PortDsControlReg"], &tempData) == 0 {
+					if tempData&0x80000000 != 0 {
+
+						if readRegister(PtpOcCore.BaseAddrLReg+ptpOc["PortDs3Reg"], &tempData) == 0 {
+							switch tempData {
+
+							case 0x0000001:
+								state = "INITIALIZING"
+
+							case 0x00000002:
+								state = "FAULTY"
+
+							case 0x00000003:
+								state = "DISABLED"
+
+							case 0x00000004:
+								state = "LISTENING"
+
+							case 0x00000005:
+								state = "PREMASTER"
+
+							case 0x00000006:
+								state = "MASTER"
+
+							case 0x00000007:
+								state = "PASSIVE"
+
+							case 0x00000008:
+								state = "UNCALIBRATED"
+
+							case 0x00000009:
+								state = "SLAVE"
+
+							default:
+								state = "NA"
+							}
+
+							break
+						} else {
+							state = "NA"
+
+						}
+					}
+				}
+			} else if i == 9 {
+				log.Fatal("read did not complete")
+			} else {
+				state = "NA"
+
+			}
+		}
+	}
+	return state
+}
+
+func readPtpOcPortDatasetAsymmetry() string {
+	tempData = 0x40000000
+	asymmetry := ""
+
+	if writeRegister(PtpOcCore.BaseAddrLReg+ptpOc["PortDsControlReg"], &tempData) == 0 {
+		for i := range 10 {
+			if i < 9 {
+				if readRegister(PtpOcCore.BaseAddrLReg+ptpOc["PortDsControlReg"], &tempData) == 0 {
+					if tempData&0x80000000 != 0 {
+
+						if readRegister(PtpOcCore.BaseAddrLReg+ptpOc["PortDs7Reg"], &tempData) == 0 {
+							asymmetry = fmt.Sprintf("%d", tempData)
+							break // success so return
+
+						} else {
+							asymmetry = "NA"
+						}
+					} else {
+						asymmetry = "NA"
+					}
+
+				} else {
+					asymmetry = "NA"
+
+				}
+			} else if i == 9 {
+				log.Fatal("read did not complete")
+			} else {
+				asymmetry = "NA"
+
+			}
+
+		}
+	}
+	return asymmetry
+}
+
+func readPtpOcPortDatasetMaxDelay() string {
+
+	tempData = 0x40000000
+	maxDelay := ""
+
+	if writeRegister(PtpOcCore.BaseAddrLReg+ptpOc["PortDsControlReg"], &tempData) == 0 {
+		for i := range 10 {
+			if i < 9 {
+				if readRegister(PtpOcCore.BaseAddrLReg+ptpOc["PortDsControlReg"], &tempData) == 0 {
+					if tempData&0x80000000 != 0 {
+
+						if readRegister(PtpOcCore.BaseAddrLReg+ptpOc["PortDs8Reg"], &tempData) == 0 {
+							maxDelay = fmt.Sprintf("%d", tempData)
+							break // success so return
+
+						} else {
+							maxDelay = "NA"
+						}
+					} else {
+						maxDelay = "NA"
+					}
+
+				} else {
+					maxDelay = "NA"
+
+				}
+			} else if i == 9 {
+				log.Fatal("read did not complete")
+			} else {
+				maxDelay = "NA"
+
+			}
+
+		}
+	}
+	return maxDelay
+}
+
+func readPtpOcPortDatasetPDelayReqLogMsgInterval() string {
+	tempData = 0x40000000
+	pDelay := ""
+
+	if writeRegister(PtpOcCore.BaseAddrLReg+ptpOc["PortDsControlReg"], &tempData) == 0 {
+		for i := range 10 {
+			if i < 9 {
+				if readRegister(PtpOcCore.BaseAddrLReg+ptpOc["PortDsControlReg"], &tempData) == 0 {
+					if tempData&0x80000000 != 0 {
+
+						if readRegister(PtpOcCore.BaseAddrLReg+ptpOc["PortDs4Reg"], &tempData) == 0 {
+							pDelay = fmt.Sprintf("%d", (tempData & 0x000000FF))
+							break // success so return
+
+						} else {
+							pDelay = "NA"
+						}
+					} else {
+						pDelay = "NA"
+					}
+
+				} else {
+					pDelay = "NA"
+
+				}
+			} else if i == 9 {
+				log.Fatal("read did not complete")
+			} else {
+				pDelay = "NA"
+
+			}
+
+		}
+	}
+	return pDelay
+
+}
+
+func readPtpOcPortDatasetDelayReqLogMsgInterval() string {
+	tempData = 0x40000000
+	delay := ""
+
+	if writeRegister(PtpOcCore.BaseAddrLReg+ptpOc["PortDsControlReg"], &tempData) == 0 {
+		for i := range 10 {
+			if i < 9 {
+				if readRegister(PtpOcCore.BaseAddrLReg+ptpOc["PortDsControlReg"], &tempData) == 0 {
+					if tempData&0x80000000 != 0 {
+
+						if readRegister(PtpOcCore.BaseAddrLReg+ptpOc["PortDs4Reg"], &tempData) == 0 {
+							delay = fmt.Sprintf("%d", ((tempData >> 8) & 0x000000FF))
+							break // success so return
+						} else {
+							delay = "NA"
+						}
+					} else {
+						delay = "NA"
+					}
+				} else {
+					delay = "NA"
+				}
+			} else if i == 9 {
+				log.Fatal("read did not complete")
+			} else {
+				delay = "NA"
+			}
+		}
+	}
+	return delay
+}
+
+func readPtpOcPortDatasetDelayReceiptTimeout() string {
+	tempData = 0x40000000
+	delay := ""
+
+	if writeRegister(PtpOcCore.BaseAddrLReg+ptpOc["PortDsControlReg"], &tempData) == 0 {
+		for i := range 10 {
+			if i < 9 {
+				if readRegister(PtpOcCore.BaseAddrLReg+ptpOc["PortDsControlReg"], &tempData) == 0 {
+					if tempData&0x80000000 != 0 {
+
+						if readRegister(PtpOcCore.BaseAddrLReg+ptpOc["PortDs4Reg"], &tempData) == 0 {
+							delay = fmt.Sprintf("%d", ((tempData >> 16) & 0x000000FF))
+							break // success so return
+						} else {
+							delay = "NA"
+						}
+					} else {
+						delay = "NA"
+					}
+				} else {
+					delay = "NA"
+				}
+			} else if i == 9 {
+				log.Fatal("read did not complete")
+			} else {
+				delay = "NA"
+			}
+		}
+	}
+	return delay
+}
+
+func readPtpOcPortDatasetAnnounceLogMsgInterval() string {
+	tempData = 0x40000000
+	delay := ""
+
+	if writeRegister(PtpOcCore.BaseAddrLReg+ptpOc["PortDsControlReg"], &tempData) == 0 {
+		for i := range 10 {
+			if i < 9 {
+				if readRegister(PtpOcCore.BaseAddrLReg+ptpOc["PortDsControlReg"], &tempData) == 0 {
+					if tempData&0x80000000 != 0 {
+
+						if readRegister(PtpOcCore.BaseAddrLReg+ptpOc["PortDs5Reg"], &tempData) == 0 {
+							delay = fmt.Sprintf("%d", (tempData & 0x000000FF))
+							break // success so return
+						} else {
+							delay = "NA"
+						}
+					} else {
+						delay = "NA"
+					}
+				} else {
+					delay = "NA"
+				}
+			} else if i == 9 {
+				log.Fatal("read did not complete")
+			} else {
+				delay = "NA"
+			}
+		}
+	}
+	return delay
+}
+
+func readPtpOcPortDatasetAnnounceReceiptTimeout() string {
+	tempData = 0x40000000
+	delay := ""
+
+	if writeRegister(PtpOcCore.BaseAddrLReg+ptpOc["PortDsControlReg"], &tempData) == 0 {
+		for i := range 10 {
+			if i < 9 {
+				if readRegister(PtpOcCore.BaseAddrLReg+ptpOc["PortDsControlReg"], &tempData) == 0 {
+					if tempData&0x80000000 != 0 {
+
+						if readRegister(PtpOcCore.BaseAddrLReg+ptpOc["PortDs5Reg"], &tempData) == 0 {
+							delay = fmt.Sprintf("%d", ((tempData >> 8) & 0x000000FF))
+							break // success so return
+						} else {
+							delay = "NA"
+						}
+					} else {
+						delay = "NA"
+					}
+				} else {
+					delay = "NA"
+				}
+			} else if i == 9 {
+				log.Fatal("read did not complete")
+			} else {
+				delay = "NA"
+			}
+		}
+	}
+	return delay
+}
+
+func readPtpOcPortDatasetSyncLogMsgInterval() string {
+	tempData = 0x40000000
+	delay := ""
+
+	if writeRegister(PtpOcCore.BaseAddrLReg+ptpOc["PortDsControlReg"], &tempData) == 0 {
+		for i := range 10 {
+			if i < 9 {
+				if readRegister(PtpOcCore.BaseAddrLReg+ptpOc["PortDsControlReg"], &tempData) == 0 {
+					if tempData&0x80000000 != 0 {
+
+						if readRegister(PtpOcCore.BaseAddrLReg+ptpOc["PortDs6Reg"], &tempData) == 0 {
+							delay = fmt.Sprintf("%d", (tempData & 0x000000FF))
+							break // success so return
+						} else {
+							delay = "NA"
+						}
+					} else {
+						delay = "NA"
+					}
+				} else {
+					delay = "NA"
+				}
+			} else if i == 9 {
+				log.Fatal("read did not complete")
+			} else {
+				delay = "NA"
+			}
+		}
+	}
+	return delay
+}
+
+func readPtpOcPortDatasetSyncReceiptTimeout() string {
+	tempData = 0x40000000
+	delay := ""
+
+	if writeRegister(PtpOcCore.BaseAddrLReg+ptpOc["PortDsControlReg"], &tempData) == 0 {
+		for i := range 10 {
+			if i < 9 {
+				if readRegister(PtpOcCore.BaseAddrLReg+ptpOc["PortDsControlReg"], &tempData) == 0 {
+					if tempData&0x80000000 != 0 {
+
+						if readRegister(PtpOcCore.BaseAddrLReg+ptpOc["PortDs6Reg"], &tempData) == 0 {
+							delay = fmt.Sprintf("%d", ((tempData >> 8) & 0x000000FF))
+							break // success so return
+						} else {
+							delay = "NA"
+						}
+					} else {
+						delay = "NA"
+					}
+				} else {
+					delay = "NA"
+				}
+			} else if i == 9 {
+				log.Fatal("read did not complete")
+			} else {
+				delay = "NA"
+			}
+		}
+	}
+	return delay
+}
+
 func showPtpOcSTATUS() {
 	fmt.Println("PTP OC STATUS:                     ", readPtpOcStatus())
 }
@@ -765,6 +1180,18 @@ func showPtpOcAll() {
 	fmt.Println("PTP OC DEFAULT DATASET SLAVE ONLY:                 ", readPtpOcDefaultDatasetSlaveOnly())
 	fmt.Println("PTP OC DEFAULT DATASET OFFSET CORRECTION ENABLED:  ", readPtpOcDefaultDatasetOffsetCorrectionsEnable())
 	fmt.Println("PTP OC DEFAULT DATASET LISTED UNICAST SLAVES ONLY: ", readPtpOcDefaultDatasetListedUnicastSlavesOnlyEnable())
+	fmt.Println("PTP OC PORT DATASET PEER DELAY:                    ", readPtpOcPortDatasetPeerDelay())
+	fmt.Println("PTP OC PORT DATASET STATE:                         ", readPtpOcPortDatasetState())
+	fmt.Println("PTP OC PORT DATASET ASYMMETRY:                     ", readPtpOcPortDatasetAsymmetry())
+	fmt.Println("PTP OC PORT DATASET MAX DELAY [ns]:                ", readPtpOcPortDatasetMaxDelay())
+	fmt.Println("PTP OC PORT DATASET P-DELAY-REQ-LOG-MSG-INTERVAL:  ", readPtpOcPortDatasetPDelayReqLogMsgInterval())
+	fmt.Println("PTP OC PORT DATASET DELAY-REQ-LOG-MSG-INTERVAL:    ", readPtpOcPortDatasetDelayReqLogMsgInterval())
+	fmt.Println("PTP OC PORT DATASET DELAY RECEIPT TIMEOUT:         ", readPtpOcPortDatasetDelayReceiptTimeout())
+	fmt.Println("PTP OC PORT DATASET ANNOUCE LOG MSG INTERVAL:      ", readPtpOcPortDatasetAnnounceLogMsgInterval())
+	fmt.Println("PTP OC PORT DATASET ANNOUCE RECEIPT TIMEOUT:       ", readPtpOcPortDatasetAnnounceReceiptTimeout())
+	fmt.Println("PTP OC PORT DATASET SYNC LOG MSG INTERVAL:         ", readPtpOcPortDatasetSyncLogMsgInterval())
+	fmt.Println("PTP OC PORT DATASET SYNC RECEIPT TIMEOUT:          ", readPtpOcPortDatasetSyncReceiptTimeout())
+	fmt.Println("PTP OC PORT DATASET SET CUSTOM INTERVALS:         WRITE ONLY ")
 }
 
 /*
