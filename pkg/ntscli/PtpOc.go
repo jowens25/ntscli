@@ -31,7 +31,7 @@ func PtpOc(cmd *cobra.Command) {
 			//}
 			////writeNtpServerReferenceId(refId)
 		case "list":
-			//NtpPrintAll()
+			showPtpOcAll()
 
 		case "instance":
 			showPtpOcINSTANCE()

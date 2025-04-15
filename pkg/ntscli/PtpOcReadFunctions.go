@@ -2,8 +2,23 @@ package ntscli
 
 import (
 	"fmt"
+	"log"
 	"net"
 )
+
+func readPtpOcVersion() string {
+
+	tempData = 0x00000000
+	// version
+	version := ""
+	if readRegister(PtpOcCore.BaseAddrLReg+ptpOc["VersionReg"], &tempData) == 0 {
+		version = fmt.Sprintf("0x%02x", tempData) // base 16 string format
+	} else {
+		version = "NA"
+	}
+
+	return version
+}
 
 // read PtpOc STATUS
 func readPtpOcStatus() string {
@@ -26,16 +41,241 @@ func readPtpOcInstanceNumber() int64 {
 	return PtpOcCore.InstanceNumber
 }
 
+// read PtpOc Vlan Enable
+func readPtpOcVlanEnable() string {
+	tempData = 0x00000000
+	vlanMode := ""
+	if readRegister(PtpOcCore.BaseAddrLReg+ptpOc["ConfigVlanReg"], &tempData) == 0 {
+		if (tempData & 0x00010000) == 0 {
+			vlanMode = "DISABLED"
+		} else {
+			vlanMode = "ENABLED"
+		}
+	} else {
+		vlanMode = "DISABLED"
+	}
+	return vlanMode
+}
+
+// read ptp oc vlan value
+func readPtpOcVlanValue() string {
+	tempData = 0x00000000
+	vlanValue := ""
+	if readRegister(PtpOcCore.BaseAddrLReg+ptpOc["ConfigVlanReg"], &tempData) == 0 {
+		tempData &= 0x0000FFFF
+		vlanValue = fmt.Sprintf("0x%04x", tempData)
+	} else {
+		vlanValue = "NA"
+	}
+
+	return vlanValue
+}
+
+func readPtpOcProfile() string {
+	tempData = 0x00000000
+	profile := ""
+	if readRegister(PtpOcCore.BaseAddrLReg+ptpOc["ConfigProfileReg"], &tempData) == 0 {
+
+		switch tempData & 0x00000007 {
+		case 0:
+			profile = "Default"
+		case 1:
+			profile = "Power"
+		case 2:
+			profile = "Utility"
+
+		case 3:
+			profile = "TSN"
+
+		case 4:
+			profile = "ITUG8265.1"
+
+		case 5:
+			profile = "ITUG8275.1"
+
+		case 6:
+			profile = "ITUG8275.2"
+
+		default:
+			profile = "NA"
+
+		}
+	}
+	return profile
+}
+
+func readPtpOcDefaultDatasetTwoStep() string {
+	tempData = 0x00000000
+	twoStep := "DISABLED"
+	if readRegister(PtpOcCore.BaseAddrLReg+ptpOc["ConfigProfileReg"], &tempData) == 0 {
+		switch (tempData >> 8) & 0x00000001 {
+		case 0:
+			twoStep = "DISABLED"
+		case 1:
+			twoStep = "ENABLED"
+		default:
+			twoStep = "DISABLED"
+		}
+	}
+	return twoStep
+}
+
+func readPtpOcDefaultDatasetSignaling() string {
+	tempData = 0x00000000
+	signaling := "DISABLED"
+	if readRegister(PtpOcCore.BaseAddrLReg+ptpOc["ConfigProfileReg"], &tempData) == 0 {
+		switch (tempData >> 9) & 0x00000001 {
+		case 0:
+			signaling = "DISABLED"
+		case 1:
+			signaling = "ENABLED"
+		default:
+			signaling = "DISABLED"
+		}
+	}
+	return signaling
+}
+
+func readPtpOcLayer() string {
+	tempData = 0x00000000
+	layer := "NA"
+	if readRegister(PtpOcCore.BaseAddrLReg+ptpOc["ConfigProfileReg"], &tempData) == 0 {
+		switch (tempData >> 16) & 0x00000003 {
+		case 0:
+			layer = "Layer 2"
+		case 1:
+			layer = "Layer 3v4"
+		case 2:
+			layer = "Layer 3v6"
+		default:
+			layer = "NA"
+		}
+	}
+	return layer
+}
+
+func readPtpOcDefaultDatasetSlaveOnly() string {
+	tempData = 0x00000000
+	slaveOnly := ""
+	if readRegister(PtpOcCore.BaseAddrLReg+ptpOc["ConfigProfileReg"], &tempData) == 0 {
+		switch (tempData >> 20) & 0x00000003 {
+		case 0:
+			slaveOnly = "FALSE"
+		case 1:
+			slaveOnly = "TRUE"
+		case 2:
+			slaveOnly = "FALSE"
+		default:
+			slaveOnly = "FALSE"
+		}
+	}
+
+	return slaveOnly
+}
+
+func readPtpOcDefaultDatasetMasterOnly() string {
+	tempData = 0x00000000
+	masterOnly := ""
+	if readRegister(PtpOcCore.BaseAddrLReg+ptpOc["ConfigProfileReg"], &tempData) == 0 {
+		switch (tempData >> 20) & 0x00000003 {
+		case 0:
+			masterOnly = "FALSE"
+		case 1:
+			masterOnly = "FALSE"
+		case 2:
+			masterOnly = "TRUE"
+		default:
+			masterOnly = "FALSE"
+		}
+	}
+	return masterOnly
+}
+
+func readPtpOcDefaultDatasetOffsetCorrectionsEnable() string {
+	tempData = 0x00000000
+	offsetCorrectEnable := ""
+	if readRegister(PtpOcCore.BaseAddrLReg+ptpOc["ConfigProfileReg"], &tempData) == 0 {
+		switch (tempData >> 22) & 0x00000001 {
+		case 0:
+			offsetCorrectEnable = "FALSE"
+		case 1:
+			offsetCorrectEnable = "TRUE"
+		default:
+			offsetCorrectEnable = "FALSE"
+		}
+	}
+	return offsetCorrectEnable
+}
+
+func readPtpOcDefaultDatasetListedUnicastSlavesOnlyEnable() string {
+	tempData = 0x00000000
+	ListedUnicastSlavesOnly := ""
+	if readRegister(PtpOcCore.BaseAddrLReg+ptpOc["ConfigProfileReg"], &tempData) == 0 {
+		switch (tempData >> 23) & 0x00000001 {
+		case 0:
+			ListedUnicastSlavesOnly = "FALSE"
+		case 1:
+			ListedUnicastSlavesOnly = "TRUE"
+		default:
+			ListedUnicastSlavesOnly = "FALSE"
+		}
+	}
+	return ListedUnicastSlavesOnly
+}
+
+func readPtpOcDelayMechanismValue() string {
+	tempData = 0x00000000
+	delayMechanismValue := ""
+	if readRegister(PtpOcCore.BaseAddrLReg+ptpOc["ConfigProfileReg"], &tempData) == 0 {
+		switch (tempData >> 24) & 0x00000001 {
+		case 0:
+			delayMechanismValue = "P2P"
+		case 1:
+			if (tempData & 0x02000000) == 0 {
+				delayMechanismValue = "E2E"
+			} else {
+				delayMechanismValue = "E2E Unicast"
+			}
+		default:
+			delayMechanismValue = "NA"
+		}
+	}
+	return delayMechanismValue
+}
+
+func readPtpOcIpMode() string {
+
+	tempData = 0x00000000
+	ipMode := ""
+	// mode & server config
+	if readRegister(PtpOcCore.BaseAddrLReg+ptpOc["ConfigModeReg"], &tempData) == 0 {
+
+		if ((tempData >> 0) & 0x00000003) == 1 {
+			ipMode = "IPv4"
+		} else if ((tempData >> 0) & 0x00000003) == 2 {
+			ipMode = "IPv6"
+		} else {
+			ipMode = "NA"
+		}
+		//return result
+	} else {
+		ipMode = "NA" // IPv4 IPv6 NA
+
+	}
+
+	return ipMode
+}
+
 // read PtpOc IP ADDRESS
 func readPtpOcIpAddress() string {
 	tempData = 0x00000000
 	ipAddr := ""
 
 	// ip
-	if readNtpServerIpMode() == "IPv4" {
+	if readPtpOcLayer() == "Layer 3v4" {
 		tempAddr := make([]byte, 4)
 		temp_ip4 := make([]int64, 4)
-		if readRegister(PtpOcCore.BaseAddrLReg+ntpServer["ConfigIpReg"], &tempData) == 0 {
+		if readRegister(PtpOcCore.BaseAddrLReg+ptpOc["ConfigIpReg"], &tempData) == 0 {
 			temp_ip4[0] = (tempData >> 0) & 0x000000FF
 			temp_ip4[1] = (tempData >> 8) & 0x000000FF
 			temp_ip4[2] = (tempData >> 16) & 0x000000FF
@@ -60,34 +300,38 @@ func readPtpOcIpAddress() string {
 		} else {
 			ipAddr = "NA"
 		}
-	} else if readNtpServerIpMode() == "IPv6" {
+	} else if readPtpOcLayer() == "Layer 3v6" {
 		//fmt.Println("IPV6 read")
 		tempAddr := make([]byte, 16)
 		temp_ip6 := make([]int64, 16)
-		if readRegister(PtpOcCore.BaseAddrLReg+ntpServer["ConfigIpReg"], &tempData) == 0 {
+		if readRegister(PtpOcCore.BaseAddrLReg+ptpOc["ConfigIpReg"], &tempData) == 0 {
 			temp_ip6[0] = (tempData >> 0) & 0x000000FF
 			temp_ip6[1] = (tempData >> 8) & 0x000000FF
 			temp_ip6[2] = (tempData >> 16) & 0x000000FF
 			temp_ip6[3] = (tempData >> 24) & 0x000000FF
+			fmt.Println("test 1")
 
-			if readRegister(PtpOcCore.BaseAddrLReg+ntpServer["ConfigIpv61Reg"], &tempData) == 0 {
+			if readRegister(PtpOcCore.BaseAddrLReg+ptpOc["ConfigIpv61Reg"], &tempData) == 0 {
 				temp_ip6[4] = (tempData >> 0) & 0x000000FF
 				temp_ip6[5] = (tempData >> 8) & 0x000000FF
 				temp_ip6[6] = (tempData >> 16) & 0x000000FF
 				temp_ip6[7] = (tempData >> 24) & 0x000000FF
+				fmt.Println("test 2")
 
-				if readRegister(PtpOcCore.BaseAddrLReg+ntpServer["ConfigIpv62Reg"], &tempData) == 0 {
+				if readRegister(PtpOcCore.BaseAddrLReg+ptpOc["ConfigIpv62Reg"], &tempData) == 0 {
 					temp_ip6[8] = (tempData >> 0) & 0x000000FF
 					temp_ip6[9] = (tempData >> 8) & 0x000000FF
 					temp_ip6[10] = (tempData >> 16) & 0x000000FF
 					temp_ip6[11] = (tempData >> 24) & 0x000000FF
+					fmt.Println("test 3")
 
-					if readRegister(PtpOcCore.BaseAddrLReg+ntpServer["ConfigIpv63Reg"], &tempData) == 0 {
+					if readRegister(PtpOcCore.BaseAddrLReg+ptpOc["ConfigIpv63Reg"], &tempData) == 0 {
 
 						temp_ip6[12] = (tempData >> 0) & 0x000000FF
 						temp_ip6[13] = (tempData >> 8) & 0x000000FF
 						temp_ip6[14] = (tempData >> 16) & 0x000000FF
 						temp_ip6[15] = (tempData >> 24) & 0x000000FF
+						fmt.Println("test 4")
 
 						//log.Println("IPv6 Addr: ", temp_ip6)
 
@@ -130,6 +374,255 @@ func readPtpOcIpAddress() string {
 	return ipAddr
 }
 
+func readPtpOcDefaultDatasetClockId() string {
+
+	tempData = 0x40000000
+	clockId := ""
+	this_string := make([]byte, 0, 32)
+
+	if writeRegister(PtpOcCore.BaseAddrLReg+ptpOc["DefaultDsControlReg"], &tempData) == 0 {
+		for i := range 10 {
+			if i < 9 {
+				if readRegister(PtpOcCore.BaseAddrLReg+ptpOc["DefaultDsControlReg"], &tempData) == 0 {
+					if tempData&0x80000000 != 0 {
+						if readRegister(PtpOcCore.BaseAddrLReg+ptpOc["DefaultDs1Reg"], &tempData) == 0 {
+							this_string = append(this_string, fmt.Sprintf("%02x", (tempData>>0)&0x000000FF)...)
+							this_string = append(this_string, ':')
+							this_string = append(this_string, fmt.Sprintf("%02x", (tempData>>8)&0x000000FF)...)
+							this_string = append(this_string, ':')
+							this_string = append(this_string, fmt.Sprintf("%02x", (tempData>>16)&0x000000FF)...)
+							this_string = append(this_string, ':')
+							this_string = append(this_string, fmt.Sprintf("%02x", (tempData>>24)&0x000000FF)...)
+							this_string = append(this_string, ':')
+
+						}
+						if readRegister(PtpOcCore.BaseAddrLReg+ptpOc["DefaultDs2Reg"], &tempData) == 0 {
+							this_string = append(this_string, fmt.Sprintf("%02x", (tempData>>0)&0x000000FF)...)
+							this_string = append(this_string, ':')
+							this_string = append(this_string, fmt.Sprintf("%02x", (tempData>>8)&0x000000FF)...)
+							this_string = append(this_string, ':')
+							this_string = append(this_string, fmt.Sprintf("%02x", (tempData>>16)&0x000000FF)...)
+							this_string = append(this_string, ':')
+							this_string = append(this_string, fmt.Sprintf("%02x", (tempData>>24)&0x000000FF)...)
+							clockId = string(this_string)
+
+						} else {
+							clockId = "NA"
+						}
+					} else {
+						clockId = "NA"
+					}
+					break // success so return
+				}
+			} else if i == 9 {
+				log.Fatal("read did not complete")
+			} else {
+				clockId = "NA"
+			}
+
+		}
+	}
+	return clockId
+}
+
+func readPtpOcDefaultDatasetDomain() string {
+
+	tempData = 0x40000000
+	domain := ""
+
+	if writeRegister(PtpOcCore.BaseAddrLReg+ptpOc["DefaultDsControlReg"], &tempData) == 0 {
+		for i := range 10 {
+			if i < 9 {
+				if readRegister(PtpOcCore.BaseAddrLReg+ptpOc["DefaultDsControlReg"], &tempData) == 0 {
+					if tempData&0x80000000 != 0 {
+
+						if readRegister(PtpOcCore.BaseAddrLReg+ptpOc["DefaultDs3Reg"], &tempData) == 0 {
+							domain = fmt.Sprintf("0x%02x", (tempData>>0)&0x000000FF)
+
+						} else {
+							domain = "NA"
+						}
+					} else {
+						domain = "NA"
+					}
+					break // success so return
+				}
+			} else if i == 9 {
+				log.Fatal("read did not complete")
+			} else {
+				domain = "NA"
+			}
+
+		}
+	}
+	return domain
+}
+
+func readPtpOcDefaultDatasetPriority1() string {
+
+	tempData = 0x40000000
+	priority1 := ""
+
+	if writeRegister(PtpOcCore.BaseAddrLReg+ptpOc["DefaultDsControlReg"], &tempData) == 0 {
+		for i := range 10 {
+			if i < 9 {
+				if readRegister(PtpOcCore.BaseAddrLReg+ptpOc["DefaultDsControlReg"], &tempData) == 0 {
+					if tempData&0x80000000 != 0 {
+
+						if readRegister(PtpOcCore.BaseAddrLReg+ptpOc["DefaultDs3Reg"], &tempData) == 0 {
+							priority1 = fmt.Sprintf("0x%02x", (tempData>>24)&0x000000FF)
+
+						} else {
+							priority1 = "NA"
+						}
+					} else {
+						priority1 = "NA"
+					}
+					break // success so return
+				}
+			} else if i == 9 {
+				log.Fatal("read did not complete")
+			} else {
+				priority1 = "NA"
+			}
+
+		}
+	}
+	return priority1
+}
+
+func readPtpOcDefaultDatasetPriority2() string {
+
+	tempData = 0x40000000
+	priority2 := ""
+
+	if writeRegister(PtpOcCore.BaseAddrLReg+ptpOc["DefaultDsControlReg"], &tempData) == 0 {
+		for i := range 10 {
+			if i < 9 {
+				if readRegister(PtpOcCore.BaseAddrLReg+ptpOc["DefaultDsControlReg"], &tempData) == 0 {
+					if tempData&0x80000000 != 0 {
+
+						if readRegister(PtpOcCore.BaseAddrLReg+ptpOc["DefaultDs3Reg"], &tempData) == 0 {
+							priority2 = fmt.Sprintf("0x%02x", (tempData>>16)&0x000000FF)
+
+						} else {
+							priority2 = "NA"
+						}
+					} else {
+						priority2 = "NA"
+					}
+					break // success so return
+				}
+			} else if i == 9 {
+				log.Fatal("read did not complete")
+			} else {
+				priority2 = "NA"
+			}
+
+		}
+	}
+	return priority2
+}
+
+func readPtpOcDefaultDatasetAccuracy() string {
+
+	tempData = 0x40000000
+	accuracy := ""
+
+	if writeRegister(PtpOcCore.BaseAddrLReg+ptpOc["DefaultDsControlReg"], &tempData) == 0 {
+		for i := range 10 {
+			if i < 9 {
+				if readRegister(PtpOcCore.BaseAddrLReg+ptpOc["DefaultDsControlReg"], &tempData) == 0 {
+					if tempData&0x80000000 != 0 {
+
+						if readRegister(PtpOcCore.BaseAddrLReg+ptpOc["DefaultDs4Reg"], &tempData) == 0 {
+							accuracy = fmt.Sprintf("%02d", (tempData>>16)&0x000000FF) // base 10
+
+						} else {
+							accuracy = "NA"
+						}
+					} else {
+						accuracy = "NA"
+					}
+					break // success so return
+				}
+			} else if i == 9 {
+				log.Fatal("read did not complete")
+			} else {
+				accuracy = "NA"
+			}
+
+		}
+	}
+	return accuracy
+}
+
+func readPtpOcDefaultDatasetClass() string {
+
+	tempData = 0x40000000
+	class := ""
+
+	if writeRegister(PtpOcCore.BaseAddrLReg+ptpOc["DefaultDsControlReg"], &tempData) == 0 {
+		for i := range 10 {
+			if i < 9 {
+				if readRegister(PtpOcCore.BaseAddrLReg+ptpOc["DefaultDsControlReg"], &tempData) == 0 {
+					if tempData&0x80000000 != 0 {
+
+						if readRegister(PtpOcCore.BaseAddrLReg+ptpOc["DefaultDs4Reg"], &tempData) == 0 {
+							class = fmt.Sprintf("0x%02d", (tempData>>24)&0x000000FF) // base 10
+
+						} else {
+							class = "NA"
+						}
+					} else {
+						class = "NA"
+					}
+					break // success so return
+				}
+			} else if i == 9 {
+				log.Fatal("read did not complete")
+			} else {
+				class = "NA"
+			}
+
+		}
+	}
+	return class
+}
+
+func readPtpOcDefaultDatasetVariance() string {
+
+	tempData = 0x40000000
+	variance := ""
+
+	if writeRegister(PtpOcCore.BaseAddrLReg+ptpOc["DefaultDsControlReg"], &tempData) == 0 {
+		for i := range 10 {
+			if i < 9 {
+				if readRegister(PtpOcCore.BaseAddrLReg+ptpOc["DefaultDsControlReg"], &tempData) == 0 {
+					if tempData&0x80000000 != 0 {
+
+						if readRegister(PtpOcCore.BaseAddrLReg+ptpOc["DefaultDs4Reg"], &tempData) == 0 {
+							variance = fmt.Sprintf("0x%02x", (tempData>>0)&0x0000FFFF)
+
+						} else {
+							variance = "NA"
+						}
+					} else {
+						variance = "NA"
+					}
+					break // success so return
+				}
+			} else if i == 9 {
+				log.Fatal("read did not complete")
+			} else {
+				variance = "NA"
+			}
+
+		}
+	}
+	return variance
+}
+
 func showPtpOcSTATUS() {
 	fmt.Println("PTP OC STATUS:                     ", readPtpOcStatus())
 }
@@ -140,6 +633,36 @@ func showPtpOcINSTANCE() {
 
 func showPtpOcIpAddress() {
 	fmt.Println("PTP OC IP ADDRESS:                 ", readPtpOcIpAddress())
+}
+
+func showPtpOcVlanEnable() {
+}
+
+func showPtpOcAll() {
+
+	fmt.Println("PTP OC VERSION:                                    ", readPtpOcVersion())
+	fmt.Println("PTP OC STATUS:                                     ", readPtpOcStatus())
+	fmt.Println("PTP OC INSTANCE:                                   ", readPtpOcInstanceNumber())
+	fmt.Println("PTP OC IP ADDRESS:                                 ", readPtpOcIpAddress())
+	fmt.Println("PTP OC VLAN ENABLE:                                ", readPtpOcVlanEnable())
+	fmt.Println("PTP OC VLAN VALUE:                                 ", readPtpOcVlanValue())
+	fmt.Println("PTP OC PROFILE:                                    ", readPtpOcProfile())
+	fmt.Println("PTP OC LAYER:                                      ", readPtpOcLayer())
+	fmt.Println("PTP OC DELAY MECHANISM:                            ", readPtpOcDelayMechanismValue())
+	fmt.Println("PTP OC IP ADDRESS:                                 ", readPtpOcIpAddress())
+	fmt.Println("PTP OC DEFAULT DATASET CLOCK ID:                   ", readPtpOcDefaultDatasetClockId())
+	fmt.Println("PTP OC DEFAULT DATASET DOMAIN:                     ", readPtpOcDefaultDatasetDomain())
+	fmt.Println("PTP OC DEFAULT DATASET PRIORITY 1:                 ", readPtpOcDefaultDatasetPriority1())
+	fmt.Println("PTP OC DEFAULT DATASET PRIORITY 2:                 ", readPtpOcDefaultDatasetPriority2())
+	fmt.Println("PTP OC DEFAULT DATASET ACCURACY:                   ", readPtpOcDefaultDatasetAccuracy())
+	fmt.Println("PTP OC DEFAULT DATASET CLASS:                      ", readPtpOcDefaultDatasetClass())
+	fmt.Println("PTP OC DEFAULT DATASET VARIANCE:                   ", readPtpOcDefaultDatasetVariance())
+	fmt.Println("PTP OC DEFAULT DATASET TWO STEP:                   ", readPtpOcDefaultDatasetTwoStep())
+	fmt.Println("PTP OC DEFAULT DATASET SIGNALING:                  ", readPtpOcDefaultDatasetSignaling())
+	fmt.Println("PTP OC DEFAULT DATASET MASTER ONLY:                ", readPtpOcDefaultDatasetMasterOnly())
+	fmt.Println("PTP OC DEFAULT DATASET SLAVE ONLY:                 ", readPtpOcDefaultDatasetSlaveOnly())
+	fmt.Println("PTP OC DEFAULT DATASET OFFSET CORRECTION ENABLED:  ", readPtpOcDefaultDatasetOffsetCorrectionsEnable())
+	fmt.Println("PTP OC DEFAULT DATASET LISTED UNICAST SLAVES ONLY: ", readPtpOcDefaultDatasetListedUnicastSlavesOnlyEnable())
 }
 
 /*

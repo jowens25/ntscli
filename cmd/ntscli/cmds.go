@@ -276,17 +276,15 @@ var ptpOc = &cobra.Command{
 	},
 }
 
-var ptpOcVlan
-
-var ptpOcProfile
-
-var ptpOcLayer 
-
-var ptpOcMode
-
-var ptpOcIp
-
-
+//var ptpOcVlan
+//
+//var ptpOcProfile
+//
+//var ptpOcLayer
+//
+//var ptpOcMode
+//
+//var ptpOcIp
 
 func Execute() {
 
