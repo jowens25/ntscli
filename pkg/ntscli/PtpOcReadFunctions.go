@@ -623,6 +623,105 @@ func readPtpOcDefaultDatasetVariance() string {
 	return variance
 }
 
+func readPtpOcDefaultDatasetShortId() string {
+
+	tempData = 0x40000000
+	shortId := ""
+
+	if writeRegister(PtpOcCore.BaseAddrLReg+ptpOc["DefaultDsControlReg"], &tempData) == 0 {
+		for i := range 10 {
+			if i < 9 {
+				if readRegister(PtpOcCore.BaseAddrLReg+ptpOc["DefaultDsControlReg"], &tempData) == 0 {
+					if tempData&0x80000000 != 0 {
+
+						if readRegister(PtpOcCore.BaseAddrLReg+ptpOc["DefaultDs5Reg"], &tempData) == 0 {
+							shortId = fmt.Sprintf("0x%04x", tempData)
+
+						} else {
+							shortId = "NA"
+						}
+					} else {
+						shortId = "NA"
+					}
+					break // success so return
+				}
+			} else if i == 9 {
+				log.Fatal("read did not complete")
+			} else {
+				shortId = "NA"
+			}
+
+		}
+	}
+	return shortId
+}
+
+func readPtpOcDefaultDatasetInaccuracy() string {
+
+	tempData = 0x40000000
+	inaccuracy := ""
+
+	if writeRegister(PtpOcCore.BaseAddrLReg+ptpOc["DefaultDsControlReg"], &tempData) == 0 {
+		for i := range 10 {
+			if i < 9 {
+				if readRegister(PtpOcCore.BaseAddrLReg+ptpOc["DefaultDsControlReg"], &tempData) == 0 {
+					if tempData&0x80000000 != 0 {
+
+						if readRegister(PtpOcCore.BaseAddrLReg+ptpOc["DefaultDs6Reg"], &tempData) == 0 {
+							inaccuracy = fmt.Sprintf("%d", tempData)
+
+						} else {
+							inaccuracy = "NA"
+						}
+					} else {
+						inaccuracy = "NA"
+					}
+					break // success so return
+				}
+			} else if i == 9 {
+				log.Fatal("read did not complete")
+			} else {
+				inaccuracy = "NA"
+			}
+
+		}
+	}
+	return inaccuracy
+}
+
+func readPtpOcDefaultDatasetNumPorts() string {
+
+	tempData = 0x40000000
+	numPorts := ""
+
+	if writeRegister(PtpOcCore.BaseAddrLReg+ptpOc["DefaultDsControlReg"], &tempData) == 0 {
+		for i := range 10 {
+			if i < 9 {
+				if readRegister(PtpOcCore.BaseAddrLReg+ptpOc["DefaultDsControlReg"], &tempData) == 0 {
+					if tempData&0x80000000 != 0 {
+
+						if readRegister(PtpOcCore.BaseAddrLReg+ptpOc["DefaultDs7Reg"], &tempData) == 0 {
+							numPorts = fmt.Sprintf("%d", tempData)
+
+						} else {
+							numPorts = "NA"
+						}
+					} else {
+						numPorts = "NA"
+					}
+					break // success so return
+				}
+			} else if i == 9 {
+				log.Fatal("read did not complete")
+			} else {
+				numPorts = "NA"
+			}
+
+		}
+	}
+	return numPorts
+}
+
 func showPtpOcSTATUS() {
 	fmt.Println("PTP OC STATUS:                     ", readPtpOcStatus())
 }
@@ -657,6 +756,9 @@ func showPtpOcAll() {
 	fmt.Println("PTP OC DEFAULT DATASET ACCURACY:                   ", readPtpOcDefaultDatasetAccuracy())
 	fmt.Println("PTP OC DEFAULT DATASET CLASS:                      ", readPtpOcDefaultDatasetClass())
 	fmt.Println("PTP OC DEFAULT DATASET VARIANCE:                   ", readPtpOcDefaultDatasetVariance())
+	fmt.Println("PTP OC DEFAULT DATASET SHORT ID:                   ", readPtpOcDefaultDatasetShortId())
+	fmt.Println("PTP OC DEFAULT DATASET INACCURACY:                 ", readPtpOcDefaultDatasetInaccuracy())
+	fmt.Println("PTP OC DEFAULT DATASET NUMBER OF PORTS:            ", readPtpOcDefaultDatasetNumPorts())
 	fmt.Println("PTP OC DEFAULT DATASET TWO STEP:                   ", readPtpOcDefaultDatasetTwoStep())
 	fmt.Println("PTP OC DEFAULT DATASET SIGNALING:                  ", readPtpOcDefaultDatasetSignaling())
 	fmt.Println("PTP OC DEFAULT DATASET MASTER ONLY:                ", readPtpOcDefaultDatasetMasterOnly())
