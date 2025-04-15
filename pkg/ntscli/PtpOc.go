@@ -1,114 +1,46 @@
 package ntscli
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 )
 
-var ptpOc = map[string]int64{
-	"ControlReg":                 0x00000000,
-	"StatusReg":                  0x00000004,
-	"VersionReg":                 0x0000000C,
-	"NrOfUnicastEntriesReg":      0x00000010,
-	"ConfigControlReg":           0x00000080,
-	"ConfigProfileReg":           0x00000084,
-	"ConfigVlanReg":              0x00000088,
-	"ConfigIpReg":                0x0000008C,
-	"ConfigIpv61Reg":             0x00000090,
-	"ConfigIpv62Reg":             0x00000094,
-	"ConfigIpv63Reg":             0x00000098,
-	"DefaultDsControlReg":        0x00000100,
-	"DefaultDs1Reg":              0x00000104,
-	"DefaultDs2Reg":              0x00000108,
-	"DefaultDs3Reg":              0x0000010C,
-	"DefaultDs4Reg":              0x00000110,
-	"DefaultDs5Reg":              0x00000114,
-	"DefaultDs6Reg":              0x00000118,
-	"DefaultDs7Reg":              0x0000011C,
-	"PortDsControlReg":           0x00000200,
-	"PortDs1Reg":                 0x00000204,
-	"PortDs2Reg":                 0x00000208,
-	"PortDs3Reg":                 0x0000020C,
-	"PortDs4Reg":                 0x00000210,
-	"PortDs5Reg":                 0x00000214,
-	"PortDs6Reg":                 0x00000218,
-	"PortDs7Reg":                 0x0000021C,
-	"PortDs8Reg":                 0x00000220,
-	"CurrentDsControlReg":        0x00000300,
-	"CurrentDs1Reg":              0x00000304,
-	"CurrentDs2Reg":              0x00000308,
-	"CurrentDs3Reg":              0x0000030C,
-	"CurrentDs4Reg":              0x00000310,
-	"CurrentDs5Reg":              0x00000314,
-	"ParentDsControlReg":         0x00000400,
-	"ParentDs1Reg":               0x00000404,
-	"ParentDs2Reg":               0x00000408,
-	"ParentDs3Reg":               0x0000040C,
-	"ParentDs4Reg":               0x00000410,
-	"ParentDs5Reg":               0x00000414,
-	"ParentDs6Reg":               0x00000418,
-	"ParentDs7Reg":               0x0000041C,
-	"ParentDs8Reg":               0x00000420,
-	"ParentDs9Reg":               0x00000424,
-	"TimePropertiesDsControlReg": 0x00000500,
-	"TimePropertiesDs1Reg":       0x00000504,
-	"TimePropertiesDs2Reg":       0x00000508,
-	"TimePropertiesDs3Reg":       0x0000050C,
-	"TimePropertiesDs4Reg":       0x00000510,
-	"TimePropertiesDs5Reg":       0x00000514,
-	"TimePropertiesDs6Reg":       0x00000518,
-	"TimePropertiesDs7Reg":       0x0000051C,
-	"TimePropertiesDs8Reg":       0x00000520,
-	"TimePropertiesDs9Reg":       0x00000524,
-	"UnicastDsControlReg":        0x00000600,
-	"UnicastDs1Reg":              0x00000604,
-	"UnicastDs2Reg":              0x00000608,
-	"UnicastDs3Reg":              0x0000060C,
-	"UnicastDs4Reg":              0x00000610,
-	"UnicastDs5Reg":              0x00000614,
-	"UnicastDs6Reg":              0x00000618,
-	"UnicastDs7Reg":              0x0000061C,
-	"UnicastDs8Reg":              0x00000620,
-	"UnicastDs9Reg":              0x00000624,
-	"UnicastDs10Reg":             0x00000628,
-	"UnicastDs11Reg":             0x0000062C,
-	"UnicastDs12Reg":             0x00000630,
-}
-
 func PtpOc(cmd *cobra.Command) {
 
-	switch cmd.Name() {
+	cmd.Flags().Visit(func(f *pflag.Flag) {
 
-	case "ptpoc":
-		cmd.Flags().Visit(func(f *pflag.Flag) {
+		switch f.Name {
+		case "enable":
+			//writeNtpServerStatus("enable")
+		case "disable":
+			//writeNtpServerStatus("disable")
+		case "core":
+			//jsonData, err := json.MarshalIndent(NtpServerCore, "", " ")
+			//if err != nil {
+			//	fmt.Println("some json error")
+			//}
+			////fmt.Println("NTP SERVER CORE: ", string(jsonData))
+		case "status":
+			//fmt.Println("NTP SERVER STATUS: ", readNtpServerStatus())
+			showPtpOcSTATUS()
 
-			switch f.Name {
-			case "status":
-				showPtpOcStatus()
+		case "reference":
+			//refId, err := cmd.Flags().GetString(f.Name)
+			//if err != nil {
+			//	log.Fatal("No such argument for property: ", f.Name, err)
+			//}
+			////writeNtpServerReferenceId(refId)
+		case "list":
+			//NtpPrintAll()
 
-			case "enable":
-				writePtpOcStatus("enable")
-			case "disable":
-				writePtpOcStatus("disable")
+		case "instance":
+			showPtpOcINSTANCE()
 
-			default:
-				fmt.Println("That does not appear to be a valid flag. Try: ", cmd.UsageString())
-			}
-		})
-
-	case "vlan":
-
-	case "utc":
-
-	case "clear":
-
-	case "server":
-
-	default:
-		fmt.Println("default case")
-		cmd.Flags().Visit(func(f *pflag.Flag) { fmt.Println(f.Name) })
-	}
+		case "version":
+			//showNtpServerVERSION()
+		default:
+			//fmt.Println("That does not appear to be a valid flag. Try: ", cmd.UsageString())
+		}
+	})
 
 }

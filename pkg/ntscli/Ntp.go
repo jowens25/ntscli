@@ -35,6 +35,12 @@ func Ntp(cmd *cobra.Command) {
 			writeNtpServerReferenceId(refId)
 		case "list":
 			NtpPrintAll()
+
+		case "instance":
+			showNtpServerINSTANCE()
+
+		case "version":
+			showNtpServerVERSION()
 		default:
 			fmt.Println("That does not appear to be a valid flag. Try: ", cmd.UsageString())
 		}

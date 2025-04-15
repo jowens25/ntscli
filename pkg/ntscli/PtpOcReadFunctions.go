@@ -1,8 +1,11 @@
 package ntscli
 
-import "fmt"
+import (
+	"fmt"
+	"net"
+)
 
-// read NtpServer STATUS
+// read PtpOc STATUS
 func readPtpOcStatus() string {
 	tempData = 0x00000000
 	enabled := ""
@@ -16,6 +19,127 @@ func readPtpOcStatus() string {
 		enabled = "disabled"
 	}
 	return enabled
+}
+
+// read PtpOc INSTANCE
+func readPtpOcInstanceNumber() int64 {
+	return PtpOcCore.InstanceNumber
+}
+
+// read PtpOc IP ADDRESS
+func readPtpOcIpAddress() string {
+	tempData = 0x00000000
+	ipAddr := ""
+
+	// ip
+	if readNtpServerIpMode() == "IPv4" {
+		tempAddr := make([]byte, 4)
+		temp_ip4 := make([]int64, 4)
+		if readRegister(PtpOcCore.BaseAddrLReg+ntpServer["ConfigIpReg"], &tempData) == 0 {
+			temp_ip4[0] = (tempData >> 0) & 0x000000FF
+			temp_ip4[1] = (tempData >> 8) & 0x000000FF
+			temp_ip4[2] = (tempData >> 16) & 0x000000FF
+			temp_ip4[3] = (tempData >> 24) & 0x000000FF
+
+			//ipAddr = int_to_ip_addr(temp_ip)
+			//fmt.Println(temp_ip4)
+			for i, intPart := range temp_ip4 {
+				tempAddr[i] = byte(intPart)
+			}
+
+			ip := net.IP(tempAddr)
+
+			if ip.To16() != nil {
+				ipAddr = ip.String()
+
+			} else {
+				ipAddr = "::ffff:" + ip.String()
+
+			}
+
+		} else {
+			ipAddr = "NA"
+		}
+	} else if readNtpServerIpMode() == "IPv6" {
+		//fmt.Println("IPV6 read")
+		tempAddr := make([]byte, 16)
+		temp_ip6 := make([]int64, 16)
+		if readRegister(PtpOcCore.BaseAddrLReg+ntpServer["ConfigIpReg"], &tempData) == 0 {
+			temp_ip6[0] = (tempData >> 0) & 0x000000FF
+			temp_ip6[1] = (tempData >> 8) & 0x000000FF
+			temp_ip6[2] = (tempData >> 16) & 0x000000FF
+			temp_ip6[3] = (tempData >> 24) & 0x000000FF
+
+			if readRegister(PtpOcCore.BaseAddrLReg+ntpServer["ConfigIpv61Reg"], &tempData) == 0 {
+				temp_ip6[4] = (tempData >> 0) & 0x000000FF
+				temp_ip6[5] = (tempData >> 8) & 0x000000FF
+				temp_ip6[6] = (tempData >> 16) & 0x000000FF
+				temp_ip6[7] = (tempData >> 24) & 0x000000FF
+
+				if readRegister(PtpOcCore.BaseAddrLReg+ntpServer["ConfigIpv62Reg"], &tempData) == 0 {
+					temp_ip6[8] = (tempData >> 0) & 0x000000FF
+					temp_ip6[9] = (tempData >> 8) & 0x000000FF
+					temp_ip6[10] = (tempData >> 16) & 0x000000FF
+					temp_ip6[11] = (tempData >> 24) & 0x000000FF
+
+					if readRegister(PtpOcCore.BaseAddrLReg+ntpServer["ConfigIpv63Reg"], &tempData) == 0 {
+
+						temp_ip6[12] = (tempData >> 0) & 0x000000FF
+						temp_ip6[13] = (tempData >> 8) & 0x000000FF
+						temp_ip6[14] = (tempData >> 16) & 0x000000FF
+						temp_ip6[15] = (tempData >> 24) & 0x000000FF
+
+						//log.Println("IPv6 Addr: ", temp_ip6)
+
+						for i, intPart := range temp_ip6 {
+							tempAddr[i] = byte(intPart)
+						}
+
+						ip := net.IP(tempAddr)
+
+						if ip.To4() != nil {
+							ipAddr = "::ffff:" + ip.String()
+						} else {
+							ipAddr = ip.String()
+						}
+
+						//log.Println(ipAddr)
+						//temp_string = QHostAddress(temp_ip6).toString() ????
+
+						//ntpServer.IpAddr = string(temp_ip6)
+
+					} else {
+						ipAddr = "NA"
+					}
+
+				} else {
+					ipAddr = "NA"
+				}
+
+			} else {
+				ipAddr = "NA"
+			}
+
+		} else {
+			ipAddr = "NA"
+		}
+	} else {
+		ipAddr = "NA"
+	}
+
+	return ipAddr
+}
+
+func showPtpOcSTATUS() {
+	fmt.Println("PTP OC STATUS:                     ", readPtpOcStatus())
+}
+
+func showPtpOcINSTANCE() {
+	fmt.Println("PTP OC INSTANCE:                   ", readPtpOcInstanceNumber())
+}
+
+func showPtpOcIpAddress() {
+	fmt.Println("PTP OC IP ADDRESS:                 ", readPtpOcIpAddress())
 }
 
 /*

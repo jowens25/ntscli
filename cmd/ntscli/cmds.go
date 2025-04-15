@@ -72,6 +72,15 @@ func init() {
 
 	ntp.AddCommand(ntpClear)
 
+	rootCmd.AddCommand(ptpOc)
+	ptpOc.Flags().BoolP("version", "v", false, "show core version")
+	ptpOc.Flags().BoolP("instance", "i", false, "show core instance number")
+	ptpOc.Flags().BoolP("core", "c", false, "show core address")
+	ptpOc.Flags().BoolP("status", "s", false, "show ntp server status")
+	ptpOc.Flags().BoolP("list", "l", false, "list ntp attributes")
+	ptpOc.Flags().BoolP("enable", "e", false, "set the status of the ntp server (enabled, disabled)")
+	ptpOc.Flags().BoolP("disable", "d", false, "set the status of the ntp server (enabled, disabled)")
+
 	//
 	//
 	////ptpoc.Flags().SortFlags = false
@@ -246,6 +255,38 @@ var ntpClear = &cobra.Command{
 
 	},
 }
+
+// ptp oc command section
+
+var ptpOc = &cobra.Command{
+	Use:     "ptpoc",
+	Aliases: []string{"ptpoc"},
+	Short:   "high performance ptp oc",
+	Args:    cobra.ArbitraryArgs,
+	Run: func(cmd *cobra.Command, args []string) {
+		ntscli.PtpOc(cmd)
+	},
+
+	PersistentPreRun: func(cmd *cobra.Command, args []string) {
+		fmt.Println("ptpoc pre run")
+		if ntscli.DeviceHasPtpOc() != 0 {
+			log.Fatal("No PTP OC Core Found")
+		}
+
+	},
+}
+
+var ptpOcVlan
+
+var ptpOcProfile
+
+var ptpOcLayer 
+
+var ptpOcMode
+
+var ptpOcIp
+
+
 
 func Execute() {
 
