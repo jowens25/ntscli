@@ -12,9 +12,12 @@ import (
 func init() {
 	// device section
 	rootCmd.AddCommand(device)
+
+	device.Flags().StringP("load", "l", "", "load a config file")
+	device.Flags().StringP("dump", "d", "", "dump a config file")
 	//device.AddCommand(coreConnect)
 	//device.AddCommand(coreList)
-	device.AddCommand(pullConfig)
+	//device.AddCommand(pullConfig)
 	// ntp server section
 	ntp.Flags().SortFlags = false
 	rootCmd.AddCommand(ntp)
@@ -132,9 +135,9 @@ var device = &cobra.Command{
 	Use:     "device",
 	Aliases: []string{"d"},
 	Short:   "the fpga device",
-	Args:    cobra.ExactArgs(1),
+	Args:    cobra.ArbitraryArgs,
 	Run: func(cmd *cobra.Command, args []string) {
-		//ntscli.Device()
+		ntscli.UpdateDevice(cmd)
 
 	},
 }
@@ -143,7 +146,7 @@ var pullConfig = &cobra.Command{
 	Use:     "pull-config",
 	Aliases: []string{"pull"},
 	Short:   "get config from device and store in temp file",
-	Args:    cobra.ExactArgs(0),
+	Args:    cobra.ArbitraryArgs,
 	Run: func(cmd *cobra.Command, args []string) {
 		//ntscli.DevicePullConfig()
 

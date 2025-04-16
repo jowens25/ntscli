@@ -42,7 +42,7 @@ func writeRegister(addr int64, data *int64) int {
 	write_data = append(write_data, '\r')
 	write_data = append(write_data, '\n')
 
-	//log.Print("VERBOSE write: ", string(write_data))
+	log.Print("VERBOSE write: ", string(write_data))
 	//fmt.Printf("write: % #x \n", write_data)
 
 	n, err := port.Write(write_data)
@@ -76,17 +76,19 @@ func writeRegister(addr int64, data *int64) int {
 	}
 
 	if n == 0 {
-		log.Fatal("response: none")
+		log.Println("No response")
+		return -1
 	}
 
 	if strings.HasPrefix(read_string, "$ER") {
-
-		log.Fatal("Error response to write command: ", read_string)
+		log.Println(handleReadWriteErrors(read_string))
+		return -1
 	}
 
 	// check response
 	if !strings.HasPrefix(read_string, "$WR") {
-		log.Fatal("w No correct response received")
+		log.Println("No write response received")
+		return -1
 	}
 
 	// check checksum

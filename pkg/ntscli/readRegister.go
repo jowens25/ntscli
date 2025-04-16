@@ -79,15 +79,22 @@ func readRegister(addr int64, data *int64) int {
 	temp_string := string(temp_data)
 	//fmt.Printf("% #x ", temp_data)
 
+	if strings.HasPrefix(read_string, "$ER") {
+		log.Println(handleReadWriteErrors(read_string))
+		return -1
+	}
+
 	// check response
 	if !strings.HasPrefix(read_string, "$RR") {
-		log.Fatal("No correct response received")
+		log.Println("No read response received")
+		return -1
 	}
 
 	// check checksum
 	if !strings.HasSuffix(read_string, temp_string) {
 		log.Println("checksum wrong: ", temp_string)
-		log.Fatal("checksum ")
+		//log.Fatal("checksum ")
+		return -1
 	} else {
 		//log.Println(read_data)
 		data_string := string(read_data[17 : 17+8])

@@ -1,7 +1,14 @@
 package ntscli
 
 import (
+	"fmt"
 	"log"
+	"os"
+	"strconv"
+	"strings"
+
+	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 )
 
 var FileDescriptor string = "/dev/ttyUSB0"
@@ -73,7 +80,7 @@ func ReadDeviceConfig() int {
 
 		typeAddr := (0x00000000 + ((i * NovusDevice.BlockSize) + NovusDevice.TypeInstanceReg))
 		if readRegister(typeAddr, &tempData) == 0 {
-			if (i == 0) && ((((tempData >> int64(16)) & 0x0000FFFF) != types.ConfSlaveCoreType) || (((tempData >> int64(0)) & 0x0000FFFF) != 1)) {
+			if (i == 0) && ((((tempData >> int64(16)) & 0x0000FFFF) != 1) || (((tempData >> int64(0)) & 0x0000FFFF) != 1)) {
 
 				log.Println("ERROR: not a conf block at the address expected")
 				break
@@ -131,5 +138,150 @@ func ReadDeviceConfig() int {
 	}
 	//fmt.Println(device)
 	//writeDeviceConfigFile(device)
+
+	//fmt.Println(NovusDevice)
 	return 0
+}
+
+func loadDeviceConfig(fileName string) {
+
+	data, err := os.ReadFile(fileName)
+	if err != nil {
+		log.Fatal("file err: ", err)
+	}
+
+	for _, line := range strings.Split(string(data), "\n") {
+		//fmt.Println(i, line)
+
+		if strings.Contains(line, "--") {
+			// a comment
+			continue
+
+		} else if strings.Contains(line, "$WC") {
+
+			line = strings.Trim(line, "\r\n")
+			lineParts := strings.Split(line, ",")
+
+			//fmt.Println(lineParts[1], lineParts[2])
+			addr, err := strconv.ParseInt(lineParts[1], 0, 64)
+			if err != nil {
+				log.Fatal(err)
+			}
+			data, err := strconv.ParseInt(lineParts[2], 0, 64)
+			if err != nil {
+				log.Fatal(err)
+			}
+			writeRegister(addr, &data)
+		}
+
+	}
+
+}
+
+func dumpDeviceConfig(fileName string) {
+
+	// read the device config - get the cores available
+	// for the cores available: read all the known registers
+	file, err := os.OpenFile(fileName, os.O_RDWR|os.O_CREATE, 0777)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	for coreName, core := range NovusDevice.Cores {
+
+		file.WriteString("--" + coreName + "\n")
+
+		for regName, reg := range core.Registers {
+			//reg = reg * 2
+			file.WriteString("----" + regName + "\n")
+			tempData = 0x00000000
+			readRegister(core.BaseAddrLReg+reg, &tempData)
+
+			file.WriteString("----" + fmt.Sprintf("0x%08x", core.BaseAddrLReg+reg) + "," + fmt.Sprintf("0x%08x", tempData) + "\n")
+		}
+	}
+
+	//addr := NovusDevice.Cores["NtpServerCoreType"].Registers["ControlReg"] + NovusDevice.Cores["NtpServerCoreType"].BaseAddrLReg
+	//readRegister(addr, &tempData)
+	//
+	//hexData := fmt.Sprintf("0x%08x", tempData)
+	//hexData = hexToUpper(hexData)
+	//fmt.Println("hexdata ", hexData)
+	//
+	//hexAddr := fmt.Sprintf("0x%08x", addr)
+	//hexAddr = hexToUpper(hexAddr)
+	//fmt.Println("hexAddr ", hexAddr)
+
+	//for k, addr := range ntpServer {
+	//	fmt.Println(k, addr)
+	//	fmt.Println(k, NovusDevice.Cores["NtpServerCoreType"].Registers[k])
+	//}
+
+	//for k, address := range NovusDevice.Cores["NtpServerCoreType"].Registers {
+	//	addr := NovusDevice.Cores["NtpServerCoreType"].BaseAddrLReg + address
+	//
+	//	tempData = 0x00000000
+	//	readRegister(address, &tempData)
+	//
+	//	hexAddr := fmt.Sprintf("0x%08x", addr)
+	//	hexAddr = hexToUpper(hexAddr)
+	//	fmt.Print("hexaddr ", hexAddr, "  ")
+	//
+	//	hexData := fmt.Sprintf("0x%08x", tempData)
+	//	hexData = hexToUpper(hexData)
+	//	fmt.Println("hexdata ", hexData)
+	//
+	//	file.WriteString("-- " + k + "\n")
+	//	file.WriteString("$WC," + hexAddr + "," + hexData + "\r\n")
+	//}
+
+	for _, reg := range ntpServer {
+		addrr := NovusDevice.Cores["NtpServerCoreType"].BaseAddrLReg + reg
+		readRegister(addrr, &tempData)
+
+		addr := fmt.Sprintf("0x%08x", addrr)
+		data := fmt.Sprintf("0x%08x", tempData)
+
+		file.WriteString("$WC," + addr + "," + data + "\r\n")
+	}
+
+	//for k, reg := range ntpServer {
+	//	tempData = 0x00000000
+	//
+	//	fmt.Println(k)
+	//	addrr := NovusDevice.Cores["NtpServerCoreType"].BaseAddrLReg + reg
+	//	readRegister(addrr, &tempData)
+	//
+	//	addr := fmt.Sprintf("0x%08x", addrr)
+	//	data := fmt.Sprintf("0x%08x", tempData)
+	//
+	//	file.WriteString("$WC," + addr + "," + data + "\r\n")
+	//}
+
+	file.Close()
+}
+
+func UpdateDevice(cmd *cobra.Command) {
+	cmd.Flags().Visit(func(f *pflag.Flag) {
+
+		switch f.Name {
+		case "load":
+			configFile, err := cmd.Flags().GetString(f.Name)
+			if err != nil {
+				log.Fatal("No such argument for property: ", f.Name, err)
+			}
+			loadDeviceConfig(configFile)
+
+		case "dump":
+			configFile, err := cmd.Flags().GetString(f.Name)
+			if err != nil {
+				log.Fatal("No such argument for property: ", f.Name, err)
+			}
+			dumpDeviceConfig(configFile)
+
+		default:
+			fmt.Println("That does not appear to be a valid flag. Try: ", cmd.UsageString())
+		}
+	})
+
 }

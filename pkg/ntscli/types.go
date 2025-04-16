@@ -193,11 +193,11 @@ func getRegistersByType(core_type int64) map[string]int64 {
 
 	switch core_type {
 
-	//case types.ConfSlaveCoreType:
-	//	return "ConfSlaveCoreType"
+	case types.ConfSlaveCoreType:
+		return confSlave
 	//
-	//case types.ClkClockCoreType:
-	//	return "ClkClockCoreType"
+	case types.ClkClockCoreType:
+		return clkClock
 	//
 	//case types.ClkSignalGeneratorCoreType:
 	//	return "ClkSignalGeneratorCoreType"
@@ -211,8 +211,8 @@ func getRegistersByType(core_type int64) map[string]int64 {
 	//case types.IrigMasterCoreType:
 	//	return "IrigMasterCoreType"
 	//
-	//case types.PpsSlaveCoreType:
-	//	return "PpsSlaveCoreType"
+	case types.PpsSlaveCoreType:
+		return ppsSlave
 	//
 	//case types.PpsMasterCoreType:
 	//	return "PpsMasterCoreType"
@@ -235,8 +235,8 @@ func getRegistersByType(core_type int64) map[string]int64 {
 		//	case types.RtcMasterCoreType:
 		//		return "RtcMasterCoreType"
 		//
-		//	case types.TodSlaveCoreType:
-		//		return "TodSlaveCoreType"
+	case types.TodSlaveCoreType:
+		return todSlave
 		//
 		//	case types.TodMasterCoreType:
 		//		return "TodMasterCoreType"
