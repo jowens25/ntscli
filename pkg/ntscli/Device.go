@@ -192,10 +192,11 @@ func dumpDeviceConfig(fileName string) {
 		file.WriteString("--" + coreName + "\n")
 
 		for regName, reg := range core.Registers {
-			//reg = reg * 2
 			file.WriteString("----" + regName + "\n")
 			tempData = 0x00000000
-			readRegister(core.BaseAddrLReg+reg, &tempData)
+			//readRegister(core.BaseAddrLReg+reg, &tempData)
+
+			file.WriteString(addNtpPropertyComment(regName))
 
 			file.WriteString("----" + fmt.Sprintf("0x%08x", core.BaseAddrLReg+reg) + "," + fmt.Sprintf("0x%08x", tempData) + "\n")
 		}

@@ -24,8 +24,8 @@ func readNtpServerStatus() string {
 }
 
 // read NtpServer INSTANCE
-func readNtpServerInstanceNumber() int64 {
-	return NtpServerCore.InstanceNumber
+func readNtpServerInstanceNumber() string {
+	return string(NtpServerCore.InstanceNumber)
 }
 
 // read NtpServer IP ADDRESS
@@ -298,14 +298,14 @@ func readNtpServerBroadcastMode() string {
 }
 
 // read NtpServer PRECISION
-func readNtpServerPrecisionValue() rune {
+func readNtpServerPrecisionValue() string {
 	tempData = 0x00000000
-	var PrecisionValue rune
+	var PrecisionValue string
 	if readRegister(NtpServerCore.BaseAddrLReg+ntpServer["ConfigModeReg"], &tempData) == 0 {
-		PrecisionValue = rune(int8(((tempData >> 8) & 0x000000FF)))
+		PrecisionValue = string(rune(int8(((tempData >> 8) & 0x000000FF))))
 
 	} else {
-		PrecisionValue = 'N'
+		PrecisionValue = "NA"
 	}
 	return PrecisionValue
 }
@@ -688,86 +688,168 @@ func readNtpServerVersion() string {
 
 }
 
+func formatNtpServerSTATUS() string {
+	return "NTP SERVER STATUS:                     " + readNtpServerStatus()
+}
+func formatNtpServerINSTANCE() string {
+	return "NTP SERVER INSTANCE:                   " + readNtpServerInstanceNumber()
+}
+func formatNtpServerIPADDRESS() string {
+	return "NTP SERVER IP ADDRESS:                 " + readNtpServerIpAddress()
+}
+func formatNtpServerIPMODE() string {
+	return "NTP SERVER IP MODE:                    " + readNtpServerIpMode()
+}
+func formatNtpServerMACADDRESS() string {
+	return "NTP SERVER MAC ADDRESS:                " + readNtpServerMac()
+}
+func formatNtpServerVLANENABLED() string {
+	return "NTP SERVER VLAN ENABLED:               " + readNtpServerVlanEnable()
+}
+func formatNtpServerVLANVALUE() string {
+	return "NTP SERVER VLAN VALUE:                 " + readNtpServerVlanValue()
+}
+func formatNtpServerUNICAST() string {
+	return "NTP SERVER UNICAST:                    " + readNtpServerUnicastMode()
+}
+func formatNtpServerMULTICAST() string {
+	return "NTP SERVER MULTICAST:                  " + readNtpServerMulticastMode()
+}
+func formatNtpServerBROADCAST() string {
+	return "NTP SERVER BROADCAST:                  " + readNtpServerBroadcastMode()
+}
+func formatNtpServerPRECISION() string {
+	return "NTP SERVER PRECISION:                  " + readNtpServerPrecisionValue()
+}
+func formatNtpServerPOLLINTERVAL() string {
+	return "NTP SERVER POLL INTERVAL:              " + readNtpServerPollIntervalValue()
+}
+func formatNtpServerSTRATUM() string {
+	return "NTP SERVER STRATUM:                    " + readNtpServerStratumValue()
+}
+func formatNtpServerREFERENCEID() string {
+	return "NTP SERVER REFERENCE ID:               " + readNtpServerReferenceId()
+}
+func formatNtpServerUTCSMEARING() string {
+	return "NTP SERVER UTC SMEARING:               " + readNtpServerUTCSmearing()
+}
+func formatNtpServerUTCLEAP61INPROGRESS() string {
+	return "NTP SERVER UTC LEAP61 IN PROGRESS:     " + readNtpServerUTCLeap61InProgress()
+}
+func formatNtpServerUTCLEAP59INPROGRESS() string {
+	return "NTP SERVER UTC LEAP59 IN PROGRESS:     " + readNtpServerUTCLeap59InProgress()
+}
+func formatNtpServerUTCLEAP61() string {
+	return "NTP SERVER UTC LEAP 61:                " + readNtpServerUTCLeap61()
+}
+func formatNtpServerUTCLEAP59() string {
+	return "NTP SERVER UTC LEAP 59:                " + readNtpServerUTCLeap59()
+}
+func formatNtpServerUTCOFFSETENABLE() string {
+	return "NTP SERVER UTC OFFSET ENABLE:          " + readNtpServerUTCOffsetEnable()
+}
+func formatNtpServerUTCOFFSETVALUE() string {
+	return "NTP SERVER UTC OFFSET VALUE:           " + readNtpServerUTCOffsetValue()
+}
+func formatNtpServerREQUESTCOUNT() string {
+	return "NTP SERVER REQUEST COUNT:              " + readNtpServerRequestCount()
+}
+func formatNtpServerRESPONSECOUNT() string {
+	return "NTP SERVER RESPONSE COUNT:             " + readNtpServerResponseCount()
+}
+func formatNtpServerREQUESTSDROPPED() string {
+	return "NTP SERVER REQUESTS DROPPED:           " + readNtpServerRequestsDropped()
+}
+func formatNtpServerBROADCASTCOUNT() string {
+	return "NTP SERVER BROADCAST COUNT:            " + readNtpServerBroadcastCount()
+}
+func formatNtpServerCOUNTCONTROL() string {
+	return "NTP SERVER COUNT CONTROL:              " + readNtpServerCountControl()
+}
+func formatNtpServerVERSION() string {
+	return "NTP SERVER VERSION:                    " + readNtpServerVersion()
+}
+
 func showNtpServerSTATUS() {
-	fmt.Println("NTP SERVER STATUS:                     ", readNtpServerStatus())
+	fmt.Println(formatNtpServerSTATUS())
 }
 func showNtpServerINSTANCE() {
-	fmt.Println("NTP SERVER INSTANCE:                   ", readNtpServerInstanceNumber())
+	fmt.Println(formatNtpServerINSTANCE())
 }
 func showNtpServerIPADDRESS() {
-	fmt.Println("NTP SERVER IP ADDRESS:                 ", readNtpServerIpAddress())
+	fmt.Println(formatNtpServerIPADDRESS())
 }
 func showNtpServerIPMODE() {
-	fmt.Println("NTP SERVER IP MODE:                    ", readNtpServerIpMode())
+	fmt.Println(formatNtpServerIPMODE())
 }
 func showNtpServerMACADDRESS() {
-	fmt.Println("NTP SERVER MAC ADDRESS:                ", readNtpServerMac())
+	fmt.Println(formatNtpServerMACADDRESS())
 }
 func showNtpServerVLANENABLED() {
-	fmt.Println("NTP SERVER VLAN ENABLED:               ", readNtpServerVlanEnable())
+	fmt.Println(formatNtpServerVLANENABLED())
 }
 func showNtpServerVLANVALUE() {
-	fmt.Println("NTP SERVER VLAN VALUE:                 ", readNtpServerVlanValue())
+	fmt.Println(formatNtpServerVLANVALUE())
 }
 func showNtpServerUNICAST() {
-	fmt.Println("NTP SERVER UNICAST:                    ", readNtpServerUnicastMode())
+	fmt.Println(formatNtpServerUNICAST())
 }
 func showNtpServerMULTICAST() {
-	fmt.Println("NTP SERVER MULTICAST:                  ", readNtpServerMulticastMode())
+	fmt.Println(formatNtpServerMULTICAST())
 }
 func showNtpServerBROADCAST() {
-	fmt.Println("NTP SERVER BROADCAST:                  ", readNtpServerBroadcastMode())
+	fmt.Println(formatNtpServerBROADCAST())
 }
 func showNtpServerPRECISION() {
-	fmt.Println("NTP SERVER PRECISION:                  ", readNtpServerPrecisionValue())
+	fmt.Println(formatNtpServerPRECISION())
 }
 func showNtpServerPOLLINTERVAL() {
-	fmt.Println("NTP SERVER POLL INTERVAL:              ", readNtpServerPollIntervalValue())
+	fmt.Println(formatNtpServerPOLLINTERVAL())
 }
 func showNtpServerSTRATUM() {
-	fmt.Println("NTP SERVER STRATUM:                    ", readNtpServerStratumValue())
+	fmt.Println(formatNtpServerSTRATUM())
 }
 func showNtpServerREFERENCEID() {
-	fmt.Println("NTP SERVER REFERENCE ID:               ", readNtpServerReferenceId())
+	fmt.Println(formatNtpServerREFERENCEID())
 }
 func showNtpServerUTCSMEARING() {
-	fmt.Println("NTP SERVER UTC SMEARING:               ", readNtpServerUTCSmearing())
+	fmt.Println(formatNtpServerUTCSMEARING())
 }
 func showNtpServerUTCLEAP61INPROGRESS() {
-	fmt.Println("NTP SERVER UTC LEAP61 IN PROGRESS:     ", readNtpServerUTCLeap61InProgress())
+	fmt.Println(formatNtpServerUTCLEAP61INPROGRESS())
 }
 func showNtpServerUTCLEAP59INPROGRESS() {
-	fmt.Println("NTP SERVER UTC LEAP59 IN PROGRESS:     ", readNtpServerUTCLeap59InProgress())
+	fmt.Println(formatNtpServerUTCLEAP59INPROGRESS())
 }
 func showNtpServerUTCLEAP61() {
-	fmt.Println("NTP SERVER UTC LEAP 61:                ", readNtpServerUTCLeap61())
+	fmt.Println(formatNtpServerUTCLEAP61())
 }
 func showNtpServerUTCLEAP59() {
-	fmt.Println("NTP SERVER UTC LEAP 59:                ", readNtpServerUTCLeap59())
+	fmt.Println(formatNtpServerUTCLEAP59())
 }
 func showNtpServerUTCOFFSETENABLE() {
-	fmt.Println("NTP SERVER UTC OFFSET ENABLE:          ", readNtpServerUTCOffsetEnable())
+	fmt.Println(formatNtpServerUTCOFFSETENABLE())
 }
 func showNtpServerUTCOFFSETVALUE() {
-	fmt.Println("NTP SERVER UTC OFFSET VALUE:           ", readNtpServerUTCOffsetValue())
+	fmt.Println(formatNtpServerUTCOFFSETVALUE())
 }
 func showNtpServerREQUESTCOUNT() {
-	fmt.Println("NTP SERVER REQUEST COUNT:              ", readNtpServerRequestCount())
+	fmt.Println(formatNtpServerREQUESTCOUNT())
 }
 func showNtpServerRESPONSECOUNT() {
-	fmt.Println("NTP SERVER RESPONSE COUNT:             ", readNtpServerResponseCount())
+	fmt.Println(formatNtpServerRESPONSECOUNT())
 }
 func showNtpServerREQUESTSDROPPED() {
-	fmt.Println("NTP SERVER REQUESTS DROPPED:           ", readNtpServerRequestsDropped())
+	fmt.Println(formatNtpServerREQUESTSDROPPED())
 }
 func showNtpServerBROADCASTCOUNT() {
-	fmt.Println("NTP SERVER BROADCAST COUNT:            ", readNtpServerBroadcastCount())
+	fmt.Println(formatNtpServerBROADCASTCOUNT())
 }
 func showNtpServerCOUNTCONTROL() {
-	fmt.Println("NTP SERVER COUNT CONTROL:              ", readNtpServerCountControl())
+	fmt.Println(formatNtpServerCOUNTCONTROL())
 }
 func showNtpServerVERSION() {
-	fmt.Println("NTP SERVER VERSION:                    ", readNtpServerVersion())
+	fmt.Println(formatNtpServerVERSION())
 }
 
 func NtpPrintAll() {
@@ -799,6 +881,69 @@ func NtpPrintAll() {
 	showNtpServerBROADCASTCOUNT()
 	showNtpServerCOUNTCONTROL()
 	showNtpServerVERSION()
+}
+
+func addNtpPropertyComment(prop string) string {
+	var val string
+	switch prop {
+	case "ControlReg":
+		val = "--"
+	case "StatusReg":
+		val = "--" + formatNtpServerSTATUS() + "\n"
+	case "VersionReg":
+		val = "--" + formatNtpServerVERSION() + "\n"
+	case "CountControlReg":
+		val = "--"
+	case "CountReqReg":
+		val = "--" + formatNtpServerREQUESTCOUNT() + "\n"
+
+	case "CountRespReg":
+		val = "--" + formatNtpServerRESPONSECOUNT() + "\n"
+	case "CountReqDroppedReg":
+		val = "--" + formatNtpServerREQUESTSDROPPED() + "\n"
+	case "CountBroadcastReg":
+		val = "--" + formatNtpServerBROADCASTCOUNT() + "\n"
+	case "ConfigControlReg":
+		val = "--"
+	case "ConfigModeReg":
+		val = "--"
+
+	case "ConfigVlanReg":
+		val =
+			"--" + formatNtpServerVLANENABLED() + "\n" +
+				"--" + formatNtpServerVLANVALUE() + "\n"
+
+	case "ConfigMac1Reg":
+		val = "--" + formatNtpServerMACADDRESS() + "\n"
+	case "ConfigMac2Reg":
+		val = ""
+
+	case "ConfigIpReg":
+		val =
+			"--" + formatNtpServerIPMODE() + "\n" +
+				"--" + formatNtpServerIPADDRESS() + "\n"
+	case "ConfigIpv61Reg":
+	case "ConfigIpv62Reg":
+	case "ConfigIpv63Reg":
+	case "ConfigReferenceIdReg":
+
+	case "UtcInfoControlReg":
+		val = ""
+
+	case "UtcInfoReg":
+		val = formatNtpServerUTCOFFSETENABLE() + "\n" +
+			"--" + formatNtpServerUTCOFFSETVALUE() + "\n" +
+			"--" + formatNtpServerUTCLEAP59() + "\n" +
+			"--" + formatNtpServerUTCLEAP59INPROGRESS() + "\n" +
+			"--" + formatNtpServerUTCLEAP61() + "\n" +
+			"--" + formatNtpServerUTCLEAP61INPROGRESS() + "\n" +
+			"--" + formatNtpServerUTCSMEARING() + "\n"
+	default:
+		val = ""
+	}
+
+	return val
+
 }
 
 // read Ntp Server IP helper functions

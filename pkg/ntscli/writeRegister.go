@@ -42,7 +42,7 @@ func writeRegister(addr int64, data *int64) int {
 	write_data = append(write_data, '\r')
 	write_data = append(write_data, '\n')
 
-	log.Print("VERBOSE write: ", string(write_data))
+	//log.Print("VERBOSE write: ", string(write_data))
 	//fmt.Printf("write: % #x \n", write_data)
 
 	n, err := port.Write(write_data)
@@ -82,6 +82,7 @@ func writeRegister(addr int64, data *int64) int {
 
 	if strings.HasPrefix(read_string, "$ER") {
 		log.Println(handleReadWriteErrors(read_string))
+		log.Println("write func")
 		return -1
 	}
 
