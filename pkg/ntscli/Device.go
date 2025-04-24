@@ -280,6 +280,10 @@ func UpdateDevice(cmd *cobra.Command) {
 			}
 			dumpDeviceConfig(configFile)
 
+		case "connect":
+
+			connectDevice()
+
 		default:
 			fmt.Println("That does not appear to be a valid flag. Try: ", cmd.UsageString())
 		}

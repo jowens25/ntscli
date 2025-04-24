@@ -1137,6 +1137,47 @@ func readPtpOcPortDatasetSyncReceiptTimeout() string {
 	return delay
 }
 
+func readPtpOcCurrentDatasetStepsRemoved() string {
+
+	tempData = 0x40000000
+	steps := ""
+
+	if writeRegister(PtpOcCore.BaseAddrLReg+ptpOc["CurrentDsControlReg"], &tempData) == 0 {
+		for i := range 10 {
+			if i < 9 {
+				if readRegister(PtpOcCore.BaseAddrLReg+ptpOc["CurrentDsControlReg"], &tempData) == 0 {
+					if (tempData & 0x80000000) != 0 {
+
+						if readRegister(PtpOcCore.BaseAddrLReg+ptpOc["CurrentDs1Reg"], &tempData) == 0 {
+							steps = fmt.Sprintf("%d", (tempData & 0xFFFF))
+							break // success so return
+						} else {
+							steps = "NA"
+						}
+					} else {
+						steps = "NA"
+					}
+				} else {
+					steps = "NA"
+				}
+			} else if i == 9 {
+				log.Fatal("read did not complete")
+			} else {
+				steps = "NA"
+			}
+		}
+	}
+	return steps
+
+}
+
+//func readPtpOcCurrentDatasetOffset() string {
+//
+//}
+//func readPtpOcCurrentDatasetDelay() string {
+//
+//}
+
 func showPtpOcSTATUS() {
 	fmt.Println("PTP OC STATUS:                     ", readPtpOcStatus())
 }
@@ -1192,6 +1233,9 @@ func showPtpOcAll() {
 	fmt.Println("PTP OC PORT DATASET SYNC LOG MSG INTERVAL:         ", readPtpOcPortDatasetSyncLogMsgInterval())
 	fmt.Println("PTP OC PORT DATASET SYNC RECEIPT TIMEOUT:          ", readPtpOcPortDatasetSyncReceiptTimeout())
 	fmt.Println("PTP OC PORT DATASET SET CUSTOM INTERVALS:         WRITE ONLY ")
+	fmt.Println("PTP OC CURRENT DATASET STEPS REMOVED:              ", readPtpOcCurrentDatasetStepsRemoved())
+	//fmt.Println("PTP OC CURRENT DATASET OFFSET [ns]:                ", readPtpOcCurrentDatasetOffset())
+	//fmt.Println("PTP OC CURRENT DATASET Delay [ns]:                 ", readPtpOcCurrentDatasetDelay())
 }
 
 /*
