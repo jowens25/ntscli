@@ -1171,9 +1171,72 @@ func readPtpOcCurrentDatasetStepsRemoved() string {
 
 }
 
-//func readPtpOcCurrentDatasetOffset() string {
-//
-//}
+func readPtpOcCurrentDatasetOffset() string {
+	tempData = 0x40000000
+	var tempOffset uint64
+	//var tempUnsignedOffset uint64
+	var tempSignedOffset int64
+	var unsignedTempData uint64
+	offset := ""
+
+	if writeRegister(PtpOcCore.BaseAddrLReg+ptpOc["CurrentDsControlReg"], &tempData) == 0 {
+		for i := range 10 {
+			if i < 9 {
+				if readRegister(PtpOcCore.BaseAddrLReg+ptpOc["CurrentDsControlReg"], &tempData) == 0 {
+					if (tempData & 0x80000000) != 0 {
+
+						if readRegister(PtpOcCore.BaseAddrLReg+ptpOc["CurrentDs2Reg"], &tempData) == 0 {
+							unsignedTempData = uint64(tempData)
+
+							tempOffset = unsignedTempData << 32
+							//offset = fmt.Sprintf("%d", (tempData & 0xFFFF))
+							if readRegister(PtpOcCore.BaseAddrLReg+ptpOc["CurrentDs3Reg"], &tempData) == 0 {
+								unsignedTempData = uint64(tempData)
+
+								tempOffset |= unsignedTempData
+
+								if (tempOffset & 0x8000000000000000) != 0 {
+
+									tempOffset = (0xFFFF000000000000 | (tempOffset >> 16))
+									tempSignedOffset = int64(tempOffset)
+								} else {
+									tempOffset = (0x0000FFFFFFFFFFFF & (tempOffset >> 16))
+									tempSignedOffset = int64(tempOffset)
+								}
+
+								if tempSignedOffset == -4294967296 { // negative 0
+									tempSignedOffset = 0
+								}
+
+								// limit to one second in display
+								if tempSignedOffset >= 100000 {
+									tempSignedOffset = 100000
+								} else if tempSignedOffset <= -100000 {
+									tempSignedOffset = -100000
+								}
+								offset = fmt.Sprintf("%d", tempSignedOffset)
+
+							}
+							break // success so return
+						} else {
+							offset = "NA"
+						}
+					} else {
+						offset = "NA"
+					}
+				} else {
+					offset = "NA"
+				}
+			} else if i == 9 {
+				log.Fatal("read did not complete")
+			} else {
+				offset = "NA"
+			}
+		}
+	}
+	return offset
+}
+
 //func readPtpOcCurrentDatasetDelay() string {
 //
 //}
@@ -1234,7 +1297,7 @@ func showPtpOcAll() {
 	fmt.Println("PTP OC PORT DATASET SYNC RECEIPT TIMEOUT:          ", readPtpOcPortDatasetSyncReceiptTimeout())
 	fmt.Println("PTP OC PORT DATASET SET CUSTOM INTERVALS:         WRITE ONLY ")
 	fmt.Println("PTP OC CURRENT DATASET STEPS REMOVED:              ", readPtpOcCurrentDatasetStepsRemoved())
-	//fmt.Println("PTP OC CURRENT DATASET OFFSET [ns]:                ", readPtpOcCurrentDatasetOffset())
+	fmt.Println("PTP OC CURRENT DATASET OFFSET [ns]:                ", readPtpOcCurrentDatasetOffset())
 	//fmt.Println("PTP OC CURRENT DATASET Delay [ns]:                 ", readPtpOcCurrentDatasetDelay())
 }
 
